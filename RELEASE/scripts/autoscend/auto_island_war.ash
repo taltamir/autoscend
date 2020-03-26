@@ -101,7 +101,7 @@ boolean warAdventure()
 
 boolean L12_getOutfit()
 {
-	if (internalQuestStatus("questL12War") < 0 || internalQuestStatus("questL12War") > 0)
+	if (internalQuestStatus("questL12War") != 0)
 	{
 		return false;
 	}
@@ -125,9 +125,18 @@ boolean L12_getOutfit()
 
 	if(!in_hardcore() && (auto_my_path() != "Heavy Rains"))
 	{
-		pullXWhenHaveY($item[Beer Helmet], 1, 0);
-		pullXWhenHaveY($item[Bejeweled Pledge Pin], 1, 0);
-		pullXWhenHaveY($item[Distressed Denim Pants], 1, 0);
+		if(get_property("auto_hippyInstead").to_boolean())
+		{
+			pullXWhenHaveY($item[Reinforced Beaded Headband], 1, 0);
+			pullXWhenHaveY($item[Round Purple Sunglasses], 1, 0);
+			pullXWhenHaveY($item[Bullet-proof Corduroys], 1, 0);			
+		}
+		if(!get_property("auto_hippyInstead").to_boolean())
+		{
+			pullXWhenHaveY($item[Beer Helmet], 1, 0);
+			pullXWhenHaveY($item[Bejeweled Pledge Pin], 1, 0);
+			pullXWhenHaveY($item[Distressed Denim Pants], 1, 0);
+		}
 	}
 
 	if(possessEquipment($item[Beer Helmet]) && possessEquipment($item[Distressed Denim Pants]) && possessEquipment($item[Bejeweled Pledge Pin]))

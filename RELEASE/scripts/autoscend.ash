@@ -2299,11 +2299,6 @@ boolean questOverride()
 		}
 	}
 
-	if(get_property("auto_hippyInstead").to_boolean())
-	{
-		set_property("auto_ignoreFlyer", true);
-	}
-
 	return false;
 }
 

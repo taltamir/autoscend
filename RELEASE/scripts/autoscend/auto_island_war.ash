@@ -111,11 +111,21 @@ boolean L12_getOutfit()
 		return false;
 	}
 
-	set_property("choiceAdventure143", "3");
-	set_property("choiceAdventure144", "3");
-	set_property("choiceAdventure145", "1");
-	set_property("choiceAdventure146", "1");
-
+	// noncombat when adventuring at The Hippy Camp (Verge of War)
+	set_property("choiceAdventure139", "3");	//fight a War Hippy (space) cadet for outfit pieces
+	set_property("choiceAdventure140", "3");	//fight a War Hippy drill sergeant for outfit pieces
+	set_property("choiceAdventure141", "1");	//if wearing [Frat Boy Ensemble] get 50 mysticality
+	set_property("choiceAdventure142", "3");	//if wearing [Frat Warrior Fatigues] start the war or skip adventure
+	
+	// noncombat when adventuring at Orcish Frat House (Verge of War)
+	set_property("choiceAdventure143", "3");	//fight a War Pledgefor outfit pieces
+	set_property("choiceAdventure144", "3");	//fight a Frat Warrior drill sergeant for outfit pieces
+	set_property("choiceAdventure145", "1");	//if wearing [Filthy Hippy Disguise] get 50 muscle
+	set_property("choiceAdventure146", "3");	//if wearing [War Hippy Fatigues] start the war or skip adventure
+	
+	
+	//heavy rains specific test, if already used rainman to copy an orcishfratboyspy but failed to YR it, then pull the missing items.
+	//TODO add hippies support here and in heavy rains file for copying hippy spy instead.
 	if((get_property("auto_orcishfratboyspy") == "done") && !in_hardcore())
 	{
 		pullXWhenHaveY($item[Beer Helmet], 1, 0);
@@ -123,6 +133,7 @@ boolean L12_getOutfit()
 		pullXWhenHaveY($item[Distressed Denim Pants], 1, 0);
 	}
 
+	//if in softcore and not in heavy rains, pull missing outfit pieces
 	if(!in_hardcore() && (auto_my_path() != "Heavy Rains"))
 	{
 		if(get_property("auto_hippyInstead").to_boolean())
@@ -139,10 +150,15 @@ boolean L12_getOutfit()
 		}
 	}
 
+	// if you managed to acquire a complete [Frat Warrior Fatigues] outfit then return true
 	if(possessEquipment($item[Beer Helmet]) && possessEquipment($item[Distressed Denim Pants]) && possessEquipment($item[Bejeweled Pledge Pin]))
 	{
-		set_property("choiceAdventure139", "3");
-		set_property("choiceAdventure140", "3");
+		return true;
+	}
+	
+	// if you managed to acquire a complete [War Hippy Fatigues] outfit then return true
+	if(possessEquipment($item[reinforced beaded headband]) && possessEquipment($item[bullet-proof corduroys]) && possessEquipment($item[round purple sunglasses]))
+	{
 		return true;
 	}
 

@@ -28,7 +28,6 @@ boolean warOutfit(boolean immediate)
 				return false;
 			}
 		}
-		return true;
 	}
 	if(get_property("auto_hippyInstead").to_boolean())
 	{
@@ -44,8 +43,8 @@ boolean warOutfit(boolean immediate)
 				return false;
 			}
 		}
-		return true;
 	}
+	return true;
 }
 
 boolean haveWarOutfit()

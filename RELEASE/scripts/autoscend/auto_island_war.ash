@@ -30,7 +30,7 @@ boolean warOutfit(boolean immediate)
 		}
 		return true;
 	}
-	else
+	if(get_property("auto_hippyInstead").to_boolean())
 	{
 		if(!reallyWarOutfit("war hippy fatigues"))
 		{
@@ -106,11 +106,6 @@ boolean L12_getOutfit()
 		return false;
 	}
 
-	if (haveWarOutfit())
-	{
-		return false;
-	}
-
 	// noncombat when adventuring at The Hippy Camp (Verge of War)
 	set_property("choiceAdventure139", "3");	//fight a War Hippy (space) cadet for outfit pieces
 	set_property("choiceAdventure140", "3");	//fight a War Hippy drill sergeant for outfit pieces
@@ -122,9 +117,14 @@ boolean L12_getOutfit()
 	set_property("choiceAdventure144", "3");	//fight a Frat Warrior drill sergeant for outfit pieces
 	set_property("choiceAdventure145", "1");	//if wearing [Filthy Hippy Disguise] get 50 muscle
 	set_property("choiceAdventure146", "3");	//if wearing [War Hippy Fatigues] start the war or skip adventure
+
+	// if you already have the war outfit we don't need to do anything now
+	if (haveWarOutfit())
+	{
+		return false;
+	}
 	
-	
-	//heavy rains specific handling
+	//heavy rains softcore pull handling
 	if(!in_hardcore() && (auto_my_path() == "Heavy Rains"))
 	{
 		//TODO add hippies support here and in heavy rains file for copying hippy spy instead.
@@ -143,7 +143,7 @@ boolean L12_getOutfit()
 		}
 	}
 
-	//if in softcore and not in heavy rains, pull missing outfit pieces
+	//softcore pull handling for all other paths
 	if(!in_hardcore() && (auto_my_path() != "Heavy Rains"))
 	{
 		if(get_property("auto_hippyInstead").to_boolean())
@@ -160,40 +160,35 @@ boolean L12_getOutfit()
 		}
 	}
 
-	// if you managed to acquire a complete war outfit then you are done, return true.
+	// if you have war outfit now then you just pulled it. so this time we return true as something changed
 	if(haveWarOutfit())
 	{
 		return true;
 	}
-	
-	// if has a complete [Filthy Hippy Disguise] outfit
-	if (possessEquipment($item[filthy knitted dread sack]) && possessEquipment($item[filthy corduroys]))
+	// if you reached this point you are either in hardcore or are in softcore but ran out of pulls
+	// if really in softcore and out of pulls then returning false here lets you skip it until tomorrow
+	if(!in_hardcore())
 	{
-		autoOutfit("filthy hippy disguise");
-		if(my_lightning() >= 5)
-		{
-			autoAdv(1, $location[Wartime Frat House]);
-			return true;
-		}
-
-		if(in_hardcore())
-		{
-			autoAdv(1, $location[Wartime Frat House]);
-			return true;
-		}
-
-		if(!canYellowRay())
-		{
-			pullXWhenHaveY($item[Beer Helmet], 1, 0);
-			pullXWhenHaveY($item[Bejeweled Pledge Pin], 1, 0);
-			pullXWhenHaveY($item[Distressed Denim Pants], 1, 0);
-			return true;
-		}
-
-		//We should probably have some kind of backup solution here
 		return false;
 	}
-	else if(L12_preOutfit())
+	
+	// if outfit could not be pulled and have a [Filthy Hippy Disguise] outfit then wear it and adventure in Frat House to get war outfit
+	if (!get_property("auto_hippyInstead").to_boolean() && possessEquipment($item[filthy knitted dread sack]) && possessEquipment($item[filthy corduroys]))
+	{
+		autoOutfit("filthy hippy disguise");
+		autoAdv(1, $location[Wartime Frat House]);
+		return true;
+	}
+	
+	// if outfit could not be pulled and have a [Frat Boy Ensemble] outfit then wear it and adventure in Hippy Camp to get war outfit
+	if (get_property("auto_hippyInstead").to_boolean() && possessEquipment($item[orcish baseball cap]) && possessEquipment($item[orcish frat-paddle]) && possessEquipment($item[orcish cargo shorts]))
+	{
+		autoOutfit("frat Boy Ensemble");
+		autoAdv(1, $location[Wartime Hippy Camp]);
+		return true;
+	}
+	
+	if(L12_preOutfit())
 	{
 		return true;
 	}
@@ -206,23 +201,35 @@ boolean L12_preOutfit()
 	{
 		return false;
 	}
+	
+	// in softcore you will pull the war outfit, no need to get pre outfit
 	if(!in_hardcore())
 	{
 		return false;
 	}
+	
 	if(my_level() < 9)
 	{
 		return false;
 	}
-	if (possessEquipment($item[filthy knitted dread sack]) && possessEquipment($item[filthy corduroys]))
-	{
-		return false;
-	}
+	
 	if(haveWarOutfit())
 	{
 		return false;
 	}
-
+	
+	// if siding with frat and already own [filthy hippy disguise] outfit needed to get the frat boy war outfit
+	if (!get_property("auto_hippyInstead").to_boolean() && possessEquipment($item[filthy knitted dread sack]) && possessEquipment($item[filthy corduroys]))
+	{
+		return false;
+	}
+	
+	// if siding with hippies and already own [frat boy ensemble] outfit needed to get the hippy war outfit
+	if (get_property("auto_hippyInstead").to_boolean() && possessEquipment($item[orcish baseball cap]) && possessEquipment($item[orcish frat-paddle]) && possessEquipment($item[orcish cargo shorts]))
+	{
+		return false;
+	}
+	
 	if (isActuallyEd())
 	{
 		if(!canYellowRay() && (my_level() < 12))
@@ -235,7 +242,6 @@ boolean L12_preOutfit()
 	{
 		return false;
 	}
-	auto_log_info("Trying to acquire a filthy hippy outfit", "blue");
 
 	if((my_class() == $class[Gelatinous Noob]) && auto_have_familiar($familiar[Robortender]))
 	{
@@ -245,15 +251,35 @@ boolean L12_preOutfit()
 		}
 	}
 
-	if(my_level() < 12)
+	// if we want to do war on the fratboy side, then we need to adventure in hippy camp for [filthy hippy disguise] outfit to then adventure in frat house for frat war outfit
+	if(!get_property("auto_hippyInstead").to_boolean())
 	{
-		autoAdv(1, $location[Hippy Camp]);
+		auto_log_info("Trying to acquire a filthy hippy outfit", "blue");
+		if(my_level() < 12)
+		{
+			autoAdv(1, $location[Hippy Camp]);
+		}
+		else
+		{
+			autoAdv(1, $location[Wartime Hippy Camp]);
+		}
 	}
-	else
+
+	// if we want to do war on the hippy side, then we need to adventure in orcish frat house for [frat boy ensemble] outfit to then adventure in hippy camp for hippy war outfit
+	if(get_property("auto_hippyInstead").to_boolean())
 	{
-		autoAdv(1, $location[Wartime Hippy Camp]);
+		auto_log_info("Trying to acquire a frat boy ensemble", "blue");
+		if(my_level() < 12)
+		{
+			autoAdv(1, $location[Frat House]);
+		}
+		else
+		{
+			autoAdv(1, $location[Wartime Frat House]);
+		}
 	}
-	return true;
+	
+	return true;	//the above ifs cover all possibilities so we had to have adventured somewhere just now. either frat house or hippy camp
 }
 
 boolean L12_startWar()
@@ -278,12 +304,11 @@ boolean L12_startWar()
 		return false;
 	}
 
-	auto_log_info("Must save the ferret!!", "blue");
-	warOutfit(false);
 	if((my_mp() > 60) || considerGrimstoneGolem(true))
 	{
 		handleBjornify($familiar[Grimstone Golem]);
 	}
+	
 	buffMaintain($effect[Snow Shoes], 0, 1, 1);
 	buffMaintain($effect[Become Superficially Interested], 0, 1, 1);
 	providePlusNonCombat(25);
@@ -293,11 +318,21 @@ boolean L12_startWar()
 		use_skill(1, $skill[Incredible Self-Esteem]);
 	}
 
-	autoAdv(1, $location[Wartime Hippy Camp]);
-	set_property("choiceAdventure142", "3");
-	if(contains_text(get_property("lastEncounter"), "Blockin\' Out the Scenery"))
+	// set noncombats to value needed to start the war
+	set_property("choiceAdventure142", "3");	//if wearing [Frat Warrior Fatigues] start the war or skip adventure
+	set_property("choiceAdventure146", "3");	//if wearing [War Hippy Fatigues] start the war or skip adventure
+
+	// wear the appropriate war outfit based on auto_hippyInstead
+	warOutfit(false);
+
+	// start the war when siding with frat boys
+	if(!get_property("auto_hippyInstead").to_boolean())
 	{
-		if(!get_property("auto_hippyInstead").to_boolean())
+		auto_log_info("Must save the ferret!!", "blue");
+		autoAdv(1, $location[Wartime Hippy Camp]);
+		
+		//if war started accept side quests for junkyard, concert, and lighthouse
+		if(contains_text(get_property("lastEncounter"), "Blockin\' Out the Scenery"))
 		{
 			visit_url("bigisland.php?action=junkman&pwd");
 			visit_url("bigisland.php?place=concert&pwd");
@@ -305,6 +340,22 @@ boolean L12_startWar()
 			visit_url("bigisland.php?place=lighthouse&action=pyro&pwd=");
 		}
 	}
+	
+	// start the war when siding with hippies
+	if(get_property("auto_hippyInstead").to_boolean())
+	{
+		auto_log_info("Must save the goldfish!!", "blue");
+		autoAdv(1, $location[Wartime Frat House]);
+		
+		//if war started accept side quests for farm, nuns, and orchard
+		if(contains_text(get_property("lastEncounter"), "Fratacombs"))
+		{
+			visit_url("bigisland.php?place=farm&action=farmer&pwd=");
+			visit_url("bigisland.php?place=nunnery");
+			visit_url("bigisland.php?place=orchard&action=stand&pwd=");
+		}
+	}
+		
 	return true;
 }
 

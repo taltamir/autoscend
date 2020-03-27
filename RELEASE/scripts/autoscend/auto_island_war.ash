@@ -124,13 +124,23 @@ boolean L12_getOutfit()
 	set_property("choiceAdventure146", "3");	//if wearing [War Hippy Fatigues] start the war or skip adventure
 	
 	
-	//heavy rains specific test, if already used rainman to copy an orcishfratboyspy but failed to YR it, then pull the missing items.
-	//TODO add hippies support here and in heavy rains file for copying hippy spy instead.
-	if((get_property("auto_orcishfratboyspy") == "done") && !in_hardcore())
+	//heavy rains specific handling
+	if(!in_hardcore() && (auto_my_path() == "Heavy Rains"))
 	{
-		pullXWhenHaveY($item[Beer Helmet], 1, 0);
-		pullXWhenHaveY($item[Bejeweled Pledge Pin], 1, 0);
-		pullXWhenHaveY($item[Distressed Denim Pants], 1, 0);
+		//TODO add hippies support here and in heavy rains file for copying hippy spy instead.
+		if(get_property("auto_hippyInstead").to_boolean())
+		{
+			pullXWhenHaveY($item[Reinforced Beaded Headband], 1, 0);
+			pullXWhenHaveY($item[Round Purple Sunglasses], 1, 0);
+			pullXWhenHaveY($item[Bullet-proof Corduroys], 1, 0);			
+		}
+		// auto_orcishfratboyspy indicates that rainman was already used to copy an orcish frat boy in heavy rains. if it failed to YR pull missing items
+		if((get_property("auto_orcishfratboyspy") == "done") && !get_property("auto_hippyInstead").to_boolean())
+		{
+			pullXWhenHaveY($item[Beer Helmet], 1, 0);
+			pullXWhenHaveY($item[Bejeweled Pledge Pin], 1, 0);
+			pullXWhenHaveY($item[Distressed Denim Pants], 1, 0);
+		}
 	}
 
 	//if in softcore and not in heavy rains, pull missing outfit pieces
@@ -150,18 +160,13 @@ boolean L12_getOutfit()
 		}
 	}
 
-	// if you managed to acquire a complete [Frat Warrior Fatigues] outfit then return true
-	if(possessEquipment($item[Beer Helmet]) && possessEquipment($item[Distressed Denim Pants]) && possessEquipment($item[Bejeweled Pledge Pin]))
+	// if you managed to acquire a complete war outfit then you are done, return true.
+	if(haveWarOutfit())
 	{
 		return true;
 	}
 	
-	// if you managed to acquire a complete [War Hippy Fatigues] outfit then return true
-	if(possessEquipment($item[reinforced beaded headband]) && possessEquipment($item[bullet-proof corduroys]) && possessEquipment($item[round purple sunglasses]))
-	{
-		return true;
-	}
-
+	// if has a complete [Filthy Hippy Disguise] outfit
 	if (possessEquipment($item[filthy knitted dread sack]) && possessEquipment($item[filthy corduroys]))
 	{
 		autoOutfit("filthy hippy disguise");
@@ -188,17 +193,9 @@ boolean L12_getOutfit()
 		//We should probably have some kind of backup solution here
 		return false;
 	}
-	else
+	else if(L12_preOutfit())
 	{
-		if(!in_hardcore())
-		{
-			pullXWhenHaveY($item[Filthy Knitted Dread Sack], 1, 0);
-			pullXWhenHaveY($item[Filthy Corduroys], 1, 0);
-		}
-		if(L12_preOutfit())
-		{
-			return true;
-		}
+		return true;
 	}
 	return false;
 }

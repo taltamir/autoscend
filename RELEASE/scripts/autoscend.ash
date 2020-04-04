@@ -2720,13 +2720,26 @@ boolean LX_freeCombats()
 	{
 		return false;
 	}
+	
+	if(my_adventures() == 0)
+	{
+		auto_log_warning("Could not use free combats because you are out of adventures", "red");
+		return false;
+	}
+	
+	if(my_adventures() < 2)
+	{
+		auto_log_warning("Too few adventures to safely automate free combats.", "red");
+		auto_log_warning("If we lose your last adv on a free combat the remaining free combats are wasted.", "red");
+		abort("Please perform the remaining free combats manually.");
+	}
 
 	if((auto_my_path() != "Disguises Delimit") && neverendingPartyCombat())
 	{
 		return true;
 	}
 
-	if(!in_koe() && auto_have_familiar($familiar[Machine Elf]) && (get_property("_machineTunnelsAdv").to_int() < 5) && (my_adventures() > 0) && !is100FamiliarRun())
+	if(!in_koe() && auto_have_familiar($familiar[Machine Elf]) && (get_property("_machineTunnelsAdv").to_int() < 5) && !is100FamiliarRun())
 	{
 		if(get_property("auto_choice1119") != "")
 		{
@@ -2755,7 +2768,7 @@ boolean LX_freeCombats()
 		return true;
 	}
 
-	if(snojoFightAvailable() && (my_adventures() > 0))
+	if(snojoFightAvailable())
 	{
 		handleFamiliar($familiar[Ms. Puck Man]);
 		autoAdv(1, $location[The X-32-F Combat Training Snowman]);

@@ -2156,7 +2156,7 @@ boolean doBedtime()
 			done = true;
 		}
 	}
-	if(!done)
+	if(!done && !in_zelda())
 	{
 		auto_log_info("Goodnight done, please make sure to handle your overdrinking, then you can run me again.", "blue");
 		if(auto_have_familiar($familiar[Stooper]) && (inebriety_left() == 0) && (my_familiar() != $familiar[Stooper]) && (auto_my_path() != "Pocket Familiars"))

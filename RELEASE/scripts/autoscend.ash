@@ -2151,7 +2151,7 @@ boolean doBedtime()
 	boolean done = (my_inebriety() > inebriety_limit()) || (my_inebriety() == inebriety_limit() && my_familiar() == $familiar[Stooper]);
 	if((my_class() == $class[Gelatinous Noob]) || !can_drink() || out_of_blood)
 	{
-		if((my_adventures() <= 1) || (internalQuestStatus("questL13Final") >= 14))
+		if((my_adventures() <= 2) || (internalQuestStatus("questL13Final") >= 14))
 		{
 			done = true;
 		}
@@ -2708,13 +2708,26 @@ boolean LX_freeCombats()
 	{
 		return false;
 	}
+	
+	if(my_adventures() == 0)
+	{
+		auto_log_warning("Could not use free combats because you are out of adventures", "red");
+		return false;
+	}
+	
+	if(my_adventures() < 2)
+	{
+		auto_log_warning("Too few adventures to safely automate free combats.", "red");
+		auto_log_warning("If we lose your last adv on a free combat the remaining free combats are wasted.", "red");
+		abort("Please perform the remaining free combats manually.");
+	}
 
 	if((auto_my_path() != "Disguises Delimit") && neverendingPartyCombat())
 	{
 		return true;
 	}
 
-	if(!in_koe() && auto_have_familiar($familiar[Machine Elf]) && (get_property("_machineTunnelsAdv").to_int() < 5) && (my_adventures() > 0) && !is100FamiliarRun())
+	if(!in_koe() && auto_have_familiar($familiar[Machine Elf]) && (get_property("_machineTunnelsAdv").to_int() < 5) && !is100FamiliarRun())
 	{
 		if(get_property("auto_choice1119") != "")
 		{
@@ -2743,7 +2756,7 @@ boolean LX_freeCombats()
 		return true;
 	}
 
-	if(snojoFightAvailable() && (my_adventures() > 0))
+	if(snojoFightAvailable())
 	{
 		handleFamiliar($familiar[Ms. Puck Man]);
 		autoAdv(1, $location[The X-32-F Combat Training Snowman]);
@@ -5137,7 +5150,11 @@ void auto_begin()
 		use_familiar($familiar[none]);
 	}
 	dailyEvents();
-	while((my_adventures() > 1) && (my_inebriety() <= inebriety_limit()) && !(my_inebriety() == inebriety_limit() && my_familiar() == $familiar[Stooper]) && !get_property("kingLiberated").to_boolean() && doTasks())
+	
+	// the main loop of autoscend is doTasks() which is actually called as part of the while.
+	// keep the last 2 adventures in case we need to craft food/drink that costs 2 adv to make.
+	// Copiers and free fights also require at least 1 adventure left
+	while((my_adventures() > 2) && (my_inebriety() <= inebriety_limit()) && !(my_inebriety() == inebriety_limit() && my_familiar() == $familiar[Stooper]) && !get_property("kingLiberated").to_boolean() && doTasks())
 	{
 		if((my_fullness() >= fullness_limit()) && (my_inebriety() >= inebriety_limit()) && (my_spleen_use() == spleen_limit()) && (my_adventures() < 4) && (my_rain() >= 50) && (get_counters("Fortune Cookie", 0, 4) == "Fortune Cookie"))
 		{

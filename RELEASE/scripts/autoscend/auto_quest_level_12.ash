@@ -1391,7 +1391,7 @@ boolean L12_farm()
 		if(faction == "fratboy")
 		{
 			enemiesRemaining = 1000-get_property("hippiesDefeated").to_int();
-			adv_saved = ceil(enemiesRemaining / (base_kills + bonus_kills)) - ceil(enemiesRemaining / (2*base_kills + bonus_kills));
+			adv_saved = ceil(enemiesRemaining.to_float() / (base_kills + bonus_kills)) - ceil(enemiesRemaining.to_float() / (2*base_kills + bonus_kills));
 		}
 	}
 	if(auto_my_path() == "Pocket Familiars")
@@ -1407,7 +1407,7 @@ boolean L12_farm()
 		{
 			enemiesRemaining = 500-get_property("hippiesDefeated").to_int();
 		}
-		adv_saved = ceil(enemiesRemaining / (base_kills + bonus_kills)) - ceil(enemiesRemaining / (2*base_kills + bonus_kills));
+		adv_saved = ceil(enemiesRemaining.to_float() / (base_kills + bonus_kills)) - ceil(enemiesRemaining.to_float() / (2*base_kills + bonus_kills));
 	}
 	
 	//is it worth it to farm a chaos butterfly?

@@ -1405,6 +1405,24 @@ boolean L12_farm()
 		}
 	}
 	
+	//if you just now acquired [chaos butterfly] and don't have anywhere to use it other than the barn or the war then use it in barn
+	//also contain code to account for being unable to use it for some reason
+	if(!get_property("chaosButterflyThrown").to_boolean() && item_amount($item[chaos butterfly]) > 0)
+	{
+		if($location[McMillicancuddy's Barn].turns_spent > 0)
+		{
+			auto_log_warning("I seem to have spent turns in [McMillicancuddy's Barn] without using the [chaos butterfly] which I have. Something is not right...", "red");
+		}
+		else if(adv_saved > adv_needed-15)
+		{
+			auto_log_warning("Looks like I should use the [chaos butterfly] in [McMillicancuddy's Barn]", "blue");
+			if(autoAdv(1, $location[McMillicancuddy's Barn]))
+			{
+				return true;
+			}
+		}		
+	}
+	
 	//final check and then we can start doing the farm
 	if(adv_saved > adv_needed)
 	{

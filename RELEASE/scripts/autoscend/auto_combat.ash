@@ -993,7 +993,7 @@ string auto_combatHandler(int round, string opp, string text)
 		}
 	}
 	
-	if(canUse($item[chaos butterfly]) && !get_property("chaosButterflyThrown").to_boolean())
+	if(canUse($item[chaos butterfly]) && !get_property("chaosButterflyThrown").to_boolean() && !get_property("auto_skipL12Farm").to_boolean())
 	{
 		if(canUse($item[Time-Spinner]) && auto_have_skill($skill[Ambidextrous Funkslinging]))
 		{

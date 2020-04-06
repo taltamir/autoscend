@@ -1356,13 +1356,14 @@ boolean L12_farm()
 		sidequests_done++;
 	}
 	
-	int kills_per_attack = 2^sidequests_done;
+	int base_kills = 2^sidequests_done;
+	int bonus_kills = 0;
 		
 	//Avatar of Sneaky Pete specific check
 	//TODO find correct spelling of mafia property for Rocket Launcher, I am currently guessing its spelling
 	if(get_property("peteMotorbikeCowling") == "Rocket Launcher")
 	{
-		kills_per_attack += 3;
+		bonus_kills += 3;
 	}
 	
 	//License to Adventure Path specific check
@@ -1390,7 +1391,7 @@ boolean L12_farm()
 		if(faction == "fratboy")
 		{
 			enemiesRemaining = 1000-get_property("hippiesDefeated").to_int();
-			adv_saved = ceil(enemiesRemaining / kills_per_attack);
+			adv_saved = ceil(enemiesRemaining / (base_kills + bonus_kills)) - ceil(enemiesRemaining / (2*base_kills + bonus_kills));
 		}
 	}
 	if(auto_my_path() == "Pocket Familiars")
@@ -1406,7 +1407,7 @@ boolean L12_farm()
 		{
 			enemiesRemaining = 500-get_property("hippiesDefeated").to_int();
 		}
-		adv_saved = ceil(enemiesRemaining / kills_per_attack);
+		adv_saved = ceil(enemiesRemaining / (base_kills + bonus_kills)) - ceil(enemiesRemaining / (2*base_kills + bonus_kills));
 	}
 	
 	//is it worth it to farm a chaos butterfly?

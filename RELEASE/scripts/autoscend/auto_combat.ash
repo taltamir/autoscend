@@ -992,6 +992,15 @@ string auto_combatHandler(int round, string opp, string text)
 			return useItem($item[Jam Band Flyers]);
 		}
 	}
+	
+	if(canUse($item[chaos butterfly]) && !get_property("chaosButterflyThrown").to_boolean())
+	{
+		if(canUse($item[Time-Spinner]) && auto_have_skill($skill[Ambidextrous Funkslinging]))
+		{
+			return useItems($item[chaos butterfly], $item[Time-Spinner]);
+		}
+		return useItem($item[chaos butterfly]);
+	}
 
 	if(item_amount($item[Cocktail Napkin]) > 0)
 	{

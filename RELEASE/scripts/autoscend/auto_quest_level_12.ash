@@ -1290,6 +1290,163 @@ boolean L12_themtharHills()
 	return true;
 }
 
+boolean L12_farm()
+{
+	if(get_property("auto_skipL12Farm").to_boolean())
+	{
+		return false;
+	}
+	if(get_property("sidequestFarmCompleted") != "none")
+	{
+		set_property("auto_skipL12Farm", "true");
+		return false;
+	}
+	if(internalQuestStatus("questL12War") != 1)
+	{
+		return false;
+	}
+	if(!get_property("auto_hippyInstead").to_boolean() && get_property("hippiesDefeated").to_int() < 458)
+	{
+		return false;
+	}
+	
+	//calculate if farm is worth doing.
+	int adv_saved = 0;
+	int enemiesRemaining = 1000;
+	int adv_needed = 40;
+	if(get_property("chaosButterflyThrown").to_boolean())
+	{
+		adv_needed -= 15;
+	}
+	//assuming we didn't adventure there without butterflying first. which would be correct unless player manually adventured there.
+	adv_needed -= $location[McMillicancuddy's Barn].turns_spent;
+	adv_needed -= $location[McMillicancuddy's Pond].turns_spent;
+	adv_needed -= $location[McMillicancuddy's Back 40].turns_spent;
+	adv_needed -= $location[McMillicancuddy's Other Back 40].turns_spent;
+	
+	//hippies save 24 adv on a perfectly implemented flyering.
+	//currently they don't flyer at all, much less perfectly. Thus it currently saves 32 adventures.
+	//fixing hippy flyering requires doing the war much sooner than it is currently done.
+	//if fixed you will lose 1 adv on doing the farm but gain early access to potentially useful food via the farm. So maybe do it anyways?
+	//also need to account for paths in which nuns or orchard are unavailable. in those paths the savings for hippies are doubled.
+	if(get_property("auto_hippyInstead").to_boolean())
+	{
+		adv_saved = 32;
+		enemiesRemaining = 1000 - get_property("fratboysDefeated").to_int();
+	}
+	//fratboy handling
+	else
+	{
+		int kills_per_attack = 1;
+		if(get_property("sidequestArenaCompleted") == "fratboy")
+		{
+			kills_per_attack = 2;
+		}
+		if(get_property("sidequestJunkyardCompleted") == "fratboy")
+		{
+			kills_per_attack = 4;
+		}
+		if(get_property("sidequestLighthouseCompleted") == "fratboy")
+		{
+			kills_per_attack = 8;
+		}
+		if(get_property("sidequestOrchardCompleted") == "fratboy")
+		{
+			kills_per_attack = 16;
+		}
+		if(get_property("sidequestNunsCompleted") == "fratboy")
+		{
+			kills_per_attack = 32;
+		}
+		
+		//Avatar of Sneaky Pete specific check
+		//TODO find correct spelling of mafia property for Rocket Launcher, I am currently guessing its spelling
+		if(get_property("peteMotorbikeCowling") == "Rocket Launcher")
+		{
+			kills_per_attack += 3;
+		}
+		
+		enemiesRemaining = 1000 - get_property("hippiesDefeated").to_int();
+		adv_saved = ceil(enemiesRemaining / kills_per_attack);
+	}
+	
+	//is it worth it to farm a chaos butterfly?
+	if(!get_property("chaosButterflyThrown").to_boolean() && item_amount($item[chaos butterfly]) == 0)
+	{
+		//softcore pull?
+		if(!in_hardcore() && adv_saved > adv_needed-15)
+		{
+			if(pullXWhenHaveY($item[chaos butterfly], 1, 0))
+			{
+				return true;
+			}
+		}
+		
+		//4 enemies in [The Castle in the Clouds in the Sky (Ground Floor)] mean there is a 25% chance to encounter the one we want.
+		//roughly estimate 4 turns per possibility giant encounter. at base drop this means ~20 adv needed.
+		if(is100FamiliarRun())
+		{
+			addToMaximize("200 item drop");
+		}
+		else
+		{
+			addToMaximize("200 item drop, switch Baby Gravy Fairy, switch Jumpsuited Hound Dog");
+		}
+		float expectedItemDropMulti = 1 + simValue("Item Drop")/100;
+		int adv_to_get_butterfly = ceil(20 / expectedItemDropMulti);
+		if(adv_saved > (adv_needed + adv_to_get_butterfly))
+		if(autoAdv(1, $location[The Castle in the Clouds in the Sky (Ground Floor)]))
+		{
+			return true;
+		}
+		else
+		{
+			auto_log_warning("For some reason failed to adventure in [The Castle in the Clouds in the Sky (Ground Floor)] for a [chaos butterfly]... skipping", "red");
+		}
+	}
+	
+	//final check and then we can start doing the farm
+	if(adv_saved > adv_needed)
+	{
+		auto_log_info("Save McMillicancuddy's Farm from the Dooks", "blue");
+		set_property("choiceAdventure147", "3");	//open the pond
+		set_property("choiceAdventure148", "1");	//open the back 40
+		set_property("choiceAdventure149", "2");	//open the other back 40
+		
+		//because of free fights we can't rely on adventures spent to see if a zone is clear. so try each zone in turn. 
+		//if it successfully adventures there then it will return true and restart the loop. 
+		//If it fails all zones then assume quest is complete and turn it in
+		if(autoAdv(1, $location[McMillicancuddy's Barn]))
+		{
+			return true;
+		}
+		if(autoAdv(1, $location[McMillicancuddy's Pond]))
+		{
+			return true;
+		}
+		if(autoAdv(1, $location[McMillicancuddy's Back 40]))
+		{
+			return true;
+		}
+		if(autoAdv(1, $location[McMillicancuddy's Other Back 40]))
+		{
+			return true;
+		}
+		
+		warOutfit(true);
+		visit_url("bigisland.php?place=farm&action=farmer&pwd");
+		if(get_property("sidequestFarmCompleted") != "none")
+		{
+			return true;
+		}
+		else
+		{
+			auto_log_warning("Failed to turn in L12 Farm sidequest", "red");
+		}
+	}
+	return false;
+}
+
 boolean L12_clearBattlefield()
 {
 	if(in_koe())

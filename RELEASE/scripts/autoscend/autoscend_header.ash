@@ -527,6 +527,7 @@ int doNumberology(string goal, boolean doIt, string option);//Defined in autosce
 int doNumberology(string goal, string option);				//Defined in autoscend/auto_util.ash
 boolean doTasks();											//Defined in autoscend.ash
 boolean L12_themtharHills();									//Defined in autoscend.ash
+boolean L12_farm();											//Defined in autoscend/auto_quest_level_12.ash
 boolean isSpeakeasyDrink(item drink); //Defined in autoscend/auto_clan.ash
 boolean canDrinkSpeakeasyDrink(item drink); //Defined in autoscend/auto_clan.ash
 boolean drinkSpeakeasyDrink(item drink);					//Defined in autoscend/auto_clan.ash

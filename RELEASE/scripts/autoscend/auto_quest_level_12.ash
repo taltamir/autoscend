@@ -1435,13 +1435,15 @@ boolean L12_farm()
 		float expectedItemDropMulti = 1 + simValue("Item Drop")/100;
 		int adv_to_get_butterfly = ceil(20 / expectedItemDropMulti);
 		if(adv_saved > (adv_needed + adv_to_get_butterfly))
-		if(autoAdv(1, $location[The Castle in the Clouds in the Sky (Ground Floor)]))
 		{
-			return true;
-		}
-		else
-		{
-			auto_log_warning("For some reason failed to adventure in [The Castle in the Clouds in the Sky (Ground Floor)] for a [chaos butterfly]... skipping", "red");
+			if(autoAdv(1, $location[The Castle in the Clouds in the Sky (Ground Floor)]))
+			{
+				return true;
+			}
+			else
+			{
+				auto_log_warning("For some reason failed to adventure in [The Castle in the Clouds in the Sky (Ground Floor)] for a [chaos butterfly]... skipping", "red");
+			}
 		}
 	}
 	

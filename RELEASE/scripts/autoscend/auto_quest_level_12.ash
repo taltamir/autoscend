@@ -1305,68 +1305,107 @@ boolean L12_farm()
 	{
 		return false;
 	}
-	if(!get_property("auto_hippyInstead").to_boolean() && get_property("hippiesDefeated").to_int() < 458)
+	
+	string faction = "fratboy";
+	if(get_property("auto_hippyInstead").to_boolean())
+	{
+		faction = "hippy";
+	}
+	
+	if(faction == "fratboy" && get_property("hippiesDefeated").to_int() < 458)
 	{
 		return false;
 	}
 	
 	//calculate if farm is worth doing.
 	int adv_saved = 0;
+	int sidequests_done = 0;
 	int enemiesRemaining = 1000;
 	int adv_needed = 40;
+	
+	//calculate adventures needed
 	if(get_property("chaosButterflyThrown").to_boolean())
 	{
 		adv_needed -= 15;
 	}
-	//assuming we didn't adventure there without butterflying first. which would be correct unless player manually adventured there.
+	//TODO does this count account for free fights in those zones? needs testing
 	adv_needed -= $location[McMillicancuddy's Barn].turns_spent;
 	adv_needed -= $location[McMillicancuddy's Pond].turns_spent;
 	adv_needed -= $location[McMillicancuddy's Back 40].turns_spent;
 	adv_needed -= $location[McMillicancuddy's Other Back 40].turns_spent;
 	
-	//hippies save 24 adv on a perfectly implemented flyering.
-	//currently they don't flyer at all, much less perfectly. Thus it currently saves 32 adventures.
-	//fixing hippy flyering requires doing the war much sooner than it is currently done.
-	//if fixed you will lose 1 adv on doing the farm but gain early access to potentially useful food via the farm. So maybe do it anyways?
-	//also need to account for paths in which nuns or orchard are unavailable. in those paths the savings for hippies are doubled.
-	if(get_property("auto_hippyInstead").to_boolean())
+	//calculated sidequests
+	if(get_property("sidequestArenaCompleted") == faction)
 	{
-		adv_saved = 32;
-		enemiesRemaining = 1000 - get_property("fratboysDefeated").to_int();
+		sidequests_done++;
 	}
-	//fratboy handling
-	else
+	if(get_property("sidequestJunkyardCompleted") == faction)
 	{
-		int kills_per_attack = 1;
-		if(get_property("sidequestArenaCompleted") == "fratboy")
-		{
-			kills_per_attack = 2;
-		}
-		if(get_property("sidequestJunkyardCompleted") == "fratboy")
-		{
-			kills_per_attack = 4;
-		}
-		if(get_property("sidequestLighthouseCompleted") == "fratboy")
-		{
-			kills_per_attack = 8;
-		}
-		if(get_property("sidequestOrchardCompleted") == "fratboy")
-		{
-			kills_per_attack = 16;
-		}
-		if(get_property("sidequestNunsCompleted") == "fratboy")
-		{
-			kills_per_attack = 32;
-		}
+		sidequests_done++;
+	}
+	if(get_property("sidequestLighthouseCompleted") == faction)
+	{
+		sidequests_done++;
+	}
+	if(get_property("sidequestOrchardCompleted") == faction)
+	{
+		sidequests_done++;
+	}
+	if(get_property("sidequestNunsCompleted") == faction)
+	{
+		sidequests_done++;
+	}
+	
+	int kills_per_attack = 2^sidequests_done;
 		
-		//Avatar of Sneaky Pete specific check
-		//TODO find correct spelling of mafia property for Rocket Launcher, I am currently guessing its spelling
-		if(get_property("peteMotorbikeCowling") == "Rocket Launcher")
+	//Avatar of Sneaky Pete specific check
+	//TODO find correct spelling of mafia property for Rocket Launcher, I am currently guessing its spelling
+	if(get_property("peteMotorbikeCowling") == "Rocket Launcher")
+	{
+		kills_per_attack += 3;
+	}
+	
+	//License to Adventure Path specific check
+	//TODO add it. it deals +3 kills per battle
+	
+	//adventures saved calculation
+	boolean path_need_special_handling = false;
+	if(auto_my_path() == "Pocket Familiars")
+	{
+		path_need_special_handling = true;
+	}
+	
+	if(!path_need_special_handling)
+	{
+		//hippies save 24 adv on a perfectly implemented flyering. currently they don't flyer at all. Thus it currently saves 32 adventures.
+		//fixing hippy flyering requires doing the war much sooner than it is currently done.
+		//if fixed you will lose 1 adv on doing the farm but gain early access to potentially useful food via the farm. So maybe do it anyways?
+		//also need to account for paths in which nuns or orchard are unavailable. in those paths the savings for hippies are higher.
+		if(faction == "hippy")
 		{
-			kills_per_attack += 3;
+			//enemiesRemaining = 1000-get_property("fratboysDefeated").to_int();
+			//enemies remaining currently does not matter for hippies
+			adv_saved = 32;
 		}
-		
-		enemiesRemaining = 1000 - get_property("hippiesDefeated").to_int();
+		if(faction == "fratboy")
+		{
+			enemiesRemaining = 1000-get_property("hippiesDefeated").to_int();
+			adv_saved = ceil(enemiesRemaining / kills_per_attack);
+		}
+	}
+	if(auto_my_path() == "Pocket Familiars")
+	{
+		//Pokefam has 500 enemies to start with with all 6 sidequests accessible. But arena and junkyard are impossible to complete
+		//TODO: find out if pokefam starts with 500 enemies defeated out of 1000 total. or 0 defeated out of 500 total
+		//current code assumes it is 0 defeated out of 500 total
+		if(faction == "hippy")
+		{
+			enemiesRemaining = 500-get_property("fratboysDefeated").to_int();
+		}
+		if(faction == "fratboy")
+		{
+			enemiesRemaining = 500-get_property("hippiesDefeated").to_int();
+		}
 		adv_saved = ceil(enemiesRemaining / kills_per_attack);
 	}
 	
@@ -1407,7 +1446,7 @@ boolean L12_farm()
 	
 	//if you just now acquired [chaos butterfly] and don't have anywhere to use it other than the barn or the war then use it in barn
 	//also contain code to account for being unable to use it for some reason
-	if(!get_property("chaosButterflyThrown").to_boolean() && item_amount($item[chaos butterfly]) > 0)
+	if(!get_property("chaosButterflyThrown").to_boolean() && item_amount($item[chaos butterfly]) > 0 && auto_my_path() != "Pocket Familiars")
 	{
 		if($location[McMillicancuddy's Barn].turns_spent > 0)
 		{

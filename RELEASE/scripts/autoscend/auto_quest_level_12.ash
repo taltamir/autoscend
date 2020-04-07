@@ -246,17 +246,18 @@ boolean L12_preOutfit()
 		}
 	}
 
+	boolean adventure_status = false;
 	// fighting for fratboys, adventure in hippy camp for [filthy hippy disguise] outfit to then adventure in frat house for frat war outfit
 	if(!get_property("auto_hippyInstead").to_boolean())
 	{
 		auto_log_info("Trying to acquire a filthy hippy outfit", "blue");
 		if(internalQuestStatus("questL12War") == -1)
 		{
-			autoAdv(1, $location[Hippy Camp]);
+			adventure_status = autoAdv(1, $location[Hippy Camp]);
 		}
 		else
 		{
-			autoAdv(1, $location[Wartime Hippy Camp]);
+			adventure_status = autoAdv(1, $location[Wartime Hippy Camp]);
 		}
 	}
 	// fighting for hippies, adventure in orcish frat house for [frat boy ensemble] outfit to then adventure in hippy camp for hippy war outfit
@@ -265,15 +266,23 @@ boolean L12_preOutfit()
 		auto_log_info("Trying to acquire a frat boy ensemble", "blue");
 		if(internalQuestStatus("questL12War") == -1)
 		{
-			autoAdv(1, $location[Frat House]);
+			adventure_status = autoAdv(1, $location[Frat House]);
 		}
 		else
 		{
-			autoAdv(1, $location[Wartime Frat House]);
+			adventure_status = autoAdv(1, $location[Wartime Frat House]);
 		}
 	}
-	
-	return true;	//the above ifs cover all possibilities so we had to have adventured somewhere just now. either frat house or hippy camp
+	//the above ifs cover all possibilities, so we should have adventured somewhere.
+	if(adventure_status)
+	{
+		return true;
+	}
+	else
+	{
+		auto_log_critical("Please report this. L12 war pre outfit acquisition mysteriously failed... skipping", "red");
+		return false;
+	}
 }
 
 boolean L12_startWar()

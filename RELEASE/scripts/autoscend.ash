@@ -230,13 +230,13 @@ boolean auto_unreservedAdvRemaining()
 	// free fights & free crafting require at least 1 adventure.
 	// cocktailcrafting and pasta cooking require 2 adventures.
 	
-	// blank int does not work properly. set blank to -1, which is the default automatic handling
+	// blank int does not work properly. blank should default to -1
 	if(get_property("auto_save_adv_override") == "")
 	{
 		set_property("auto_save_adv_override", -1);
 	}
 	
-	// auto_save_adv_override value of -1 means automatic handling
+	// if auto_save_adv_override value is not -1 then use the override
 	if(get_property("auto_save_adv_override") != -1)
 	{
 		if(my_adventures() > get_property("auto_save_adv_override").to_int())

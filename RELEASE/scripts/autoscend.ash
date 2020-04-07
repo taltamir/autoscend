@@ -224,6 +224,42 @@ void initializeSettings()
 	set_property("auto_doneInitialize", my_ascensions());
 }
 
+boolean auto_unreservedAdvRemaining()
+{
+	// Calculates if we should continue to run the main loop based on how many adv we want to keep.
+	// free fights & free crafting require at least 1 adventure.
+	// cocktailcrafting and pasta cooking require 2 adventures.
+	
+	// blank int does not work properly. set blank to -1, which is the default automatic handling
+	if(get_property("auto_save_adv_override") == "")
+	{
+		set_property("auto_save_adv_override", -1);
+	}
+	
+	// auto_save_adv_override value of -1 means automatic handling
+	if(get_property("auto_save_adv_override") != -1)
+	{
+		if(my_adventures() > get_property("auto_save_adv_override").to_int())
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	//TODO full calculation on how many adv to reserve. for now just set it to reserve 1
+	if(my_adventures() > 1)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 boolean handleFamiliar(string type)
 {
 	//Can this take zoneInfo into account?
@@ -5152,9 +5188,7 @@ void auto_begin()
 	dailyEvents();
 	
 	// the main loop of autoscend is doTasks() which is actually called as part of the while.
-	// keep the last 2 adventures in case we need to craft food/drink that costs 2 adv to make.
-	// Copiers and free fights also require at least 1 adventure left
-	while((my_adventures() > 2) && (my_inebriety() <= inebriety_limit()) && !(my_inebriety() == inebriety_limit() && my_familiar() == $familiar[Stooper]) && !get_property("kingLiberated").to_boolean() && doTasks())
+	while(auto_unreservedAdvRemaining() && (my_inebriety() <= inebriety_limit()) && !(my_inebriety() == inebriety_limit() && my_familiar() == $familiar[Stooper]) && !get_property("kingLiberated").to_boolean() && doTasks())
 	{
 		if((my_fullness() >= fullness_limit()) && (my_inebriety() >= inebriety_limit()) && (my_spleen_use() == spleen_limit()) && (my_adventures() < 4) && (my_rain() >= 50) && (get_counters("Fortune Cookie", 0, 4) == "Fortune Cookie"))
 		{

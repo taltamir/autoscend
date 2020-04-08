@@ -227,8 +227,6 @@ void initializeSettings()
 boolean auto_unreservedAdvRemaining()
 {
 	// Calculates if we should continue to run the main loop based on how many adv we want to keep.
-	// free fights & free crafting require at least 1 adventure.
-	// cocktailcrafting and pasta cooking require 2 adventures.
 	
 	// blank int does not work properly. blank should default to -1
 	if(get_property("auto_save_adv_override") == "")
@@ -248,9 +246,19 @@ boolean auto_unreservedAdvRemaining()
 			return false;
 		}
 	}
+
+	// automatically calculate adv to reserve at end of day
+	// free fights & free crafting require at least 1 adventure.
+	// cocktailcrafting and pasta cooking require 2 adventures.
 	
-	//TODO full calculation on how many adv to reserve. for now just set it to reserve 1
-	if(my_adventures() > 1)
+	int reserveadv = 1;
+	
+	if((my_level() < 13 || get_property("auto_disregardInstantKarma").to_boolean()) && auto_freeCombatsRemaining() > 0)
+	{
+		reserveadv = max(2, reserveadv);
+	}
+	
+	if(my_adventures() > reserveadv)
 	{
 		return true;
 	}
@@ -2736,6 +2744,38 @@ boolean LX_getDigitalKey()
 		autoAdv(1, $location[8-bit Realm]);
 	}
 	return true;
+}
+
+int auto_freeCombatsRemaining()
+{
+	int count = 0;
+	
+	if(!in_koe() && auto_have_familiar($familiar[Machine Elf]) && !is100FamiliarRun())
+	{
+		count += 5-get_property("_machineTunnelsAdv").to_int();
+	}
+	if(snojoFightAvailable())
+	{
+		count += 10-get_property("_snojoFreeFights").to_int();
+	}
+	if(auto_have_familiar($familiar[God Lobster]) && !is100FamiliarRun())
+	{
+		count += 3-get_property("_godLobsterFights").to_int();
+	}
+	if(neverendingPartyAvailable())
+	{
+		count += 10-get_property("_neverendingPartyFreeTurns").to_int();
+	}
+	if(get_property("_eldritchTentacleFought").to_boolean() == false)
+	{
+		count++;
+	}
+	if(auto_have_skill($skill[Evoke Eldritch Horror]) && get_property("_eldritchHorrorEvoked").to_boolean() == false)
+	{
+		count++;
+	}
+	
+	return count;
 }
 
 boolean LX_freeCombats()

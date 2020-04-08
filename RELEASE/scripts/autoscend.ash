@@ -258,6 +258,23 @@ boolean auto_unreservedAdvRemaining()
 		reserveadv = max(2, reserveadv);
 	}
 	
+	if(freeCrafts() < 2)
+	{
+		//smallest Pasta dish that takes 2 adv to craft is 3 fullness.
+		//Pastamastery is required for all pasta and having it alone is enough to craft foods that take 2 adv to craft
+		if(can_eat() && my_fullness()+3 <= fullness_limit() && auto_have_skill($skill[Pastamastery]))
+		{
+			reserveadv = max(2, reserveadv);
+		}
+		
+		//Advanced Cocktailcrafting skill is enough to make drinks that cost 2 adv to craft
+		//because of nightcap, there is no point in checking your inebrity limits.
+		if(can_drink() && auto_have_skill($skill[Advanced Cocktailcrafting]))
+		{
+			reserveadv = max(2, reserveadv);
+		}
+	}
+	
 	if(my_adventures() > reserveadv)
 	{
 		return true;

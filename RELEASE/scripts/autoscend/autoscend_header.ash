@@ -94,6 +94,7 @@ boolean L10_basement();
 boolean L10_ground();
 boolean L10_topFloor();
 boolean L10_holeInTheSkyUnlock();
+boolean LX_getStarKey();
 boolean L11_palindome();
 boolean L11_hiddenCity();
 boolean L11_hiddenTavernUnlock();

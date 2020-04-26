@@ -306,7 +306,11 @@ void borisOngoingLaugh()
 	
 	while((my_hp()+1) < my_maxhp() && my_mp() > 10 && my_mp() > (my_maxmp()/2))
 	{
-		use_skill(1, $skill[Laugh it Off]);
+		//multi use without risking wastage.
+		int missingHP = my_maxhp() - my_hp();
+		int availableMP = my_mp() - (my_maxmp()/2);
+		int castAmount = min(availableMP, (missingHP / 2));
+		use_skill(castAmount, $skill[Laugh it Off]);
 	}
 }
 

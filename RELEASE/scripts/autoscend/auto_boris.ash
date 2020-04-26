@@ -306,14 +306,54 @@ void borisDemandSandwich()
 	}
 }
 
+void borisOngoingLaugh()
+{
+	//Convert excess MP regen for boris into HP if possible to prevent it from being wasted.
+	//Mostly this comes from clancy, but we want to account for other sources.
+	if(!in_boris())
+	{
+		return;
+	}
+	
+	float max_potential_mp_regen = ceil(simValue("mp regen max"));
+	float missing_mp = my_maxmp() - my_mp();
+	float potential_mp_wasted = 0;
+	if(max_potential_mp_regen > missing_mp)
+	{
+		potential_mp_wasted = max_potential_mp_regen - missing_mp;
+	}
+	
+	//Laugh it off costs 1 MP to cast and gives either 1 or 2 HP randomly.
+	while(my_hp() < my_maxhp() && potential_mp_wasted > 0)
+	{
+		//multi use without risking wastage. Need to loop a few times because we can't predict what we actually roll for healing.
+		int missingHP = my_maxhp() - my_hp();
+		int castAmount = min(potential_mp_wasted, missingHP / 2);
+		
+		//at exactly 1 HP missing there is a 50% chance of wasting 1 point of HP healed. Better than 100% chance of wasting MP though, so do it.
+		//also this prevents an infinite loop at 1HP missing. Keep that in mind if you remove this
+		if(missingHP == 1)	
+		{
+			castAmount = 1;
+		}
+		
+		potential_mp_wasted = potential_mp_wasted - castAmount;		
+		use_skill(castAmount, $skill[Laugh it Off]);
+	}
+}
+
 boolean LM_boris()
 {
+	//this function is called early once every loop of doTasks() in autoscend.ash
+	//if something in this function returns true then it will restart the loop and get called again.
+	
 	if(!in_boris())
 	{
 		return false;
 	}
 	
 	borisDemandSandwich();
+	borisOngoingLaugh();
 	boris_buySkills();
 
 	return false;

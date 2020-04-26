@@ -2385,21 +2385,135 @@ boolean powerLevelAdjustment()
 	return false;
 }
 
+boolean unlockThinknerdWarehouse()
+{
+	//returns true if you have access to [The Thinknerd Warehouse], if you don't have access tries to unlock it and then return true.
+	//returns false if fails to unlock.
+	//much easier to do if you already have torso awaregness
+	
+	if(internalQuestStatus("questM22Shirt") > -1)
+	{
+		return true;
+	}
+	
+	//unlocking is a multi step process. We want to try things in reverse to conserve resources and in case some steps were already complete.
+	
+	boolean useLetter()
+	{
+		if(item_amount($item[Letter for Melvign the Gnome]) > 0)
+		{
+			if(use(1, $item[Letter for Melvign the Gnome]))
+			{
+				return true;
+			}
+			else
+			{
+				abort("Somehow failed to use [Letter for Melvign the Gnome]... aborting to prevent infinite loops");
+			}
+		}
+		return false;
+	}
+	
+	item target_shirt = $item[none];		//needs to be global so we can call it outside boolean hasShirt()
+	boolean hasShirt()
+	{
+		if(target_shirt != $item[none]) return true;
+		int[item] inventory_snapshot = get_inventory();		//need to refresh inventory_snapshot every time this function is called.
+		foreach it in inventory_snapshot
+		{
+			if(item_type(it) == "shirt" && can_equip(it))
+			{
+				target_shirt = it;
+				break;
+			}
+		}
+		if(target_shirt != $item[none]) return true;
+		return false;
+	}
+	boolean useShirtThenLetter()
+	{
+		equip($slot[shirt], target_shirt);
+		if(useLetter()) return true;
+		auto_log_error("For some reason boolean unlockThinknerdWarehouse() failed when trying to use the shirt [" + target_shirt + "] to get [Letter for Melvign the Gnome] to start the quest", "red");
+		return false;
+	}
+	void tryShirtCreate(item it)
+	{
+		if(!hasShirt() && can_equip(it) && creatable_amount(it) > 0)
+		{
+			if(create(1, it))
+			{
+				target_shirt = it;
+			}
+		}
+	}
+	void tryShirtPull(item it)
+	{
+		if(!hasShirt() && can_equip(it) && canPull(it))
+		{
+			if(pullXWhenHaveY(it, 1, 0))
+			{
+				target_shirt = it;
+			}
+		}
+	}
+	
+	//if you already had a shirt or a letter, then just unlock the quest now
+	if(useLetter()) return true;
+	if(hasShirt())
+	{
+		if(useShirtThenLetter()) return true;
+	}
+	
+	//Try to acquire a shirt.
+	//IOTM foldable shirts that cost nothing.
+	//TODO, make these actually work
+	//	tryShirtCreate($item[flaming pink shirt])		//foldable IOTM
+	//	tryShirtCreate($item[origami pasties])			//foldable IOTM
+	// 	tryShirtCreate($item[sugar shirt])				//libram summons sugar sheet which can be folded into sugar shirt
+	//	tryShirtCreate($item[makeshift garbage shirt])	//actually needs januaryToteAcquire($item[makeshift garbage shirt])
+	
+	//Spend a pull on a shirt
+	tryShirtPull($item[Sneaky Pete\'s leather jacket]);		//useful IOTM shirt with no requirements to wear
+	tryShirtPull($item[Sneaky Pete\'s leather jacket (collar popped)]);
+	tryShirtPull($item[Professor What T-Shirt]);			//you likely have it, no requirements to wear, very cheap in mall
+	
+	//Smith a shirt. Will likely cost 1 adv
+	tryShirtCreate($item[white snakeskin duster]);		//7 mus req
+	tryShirtCreate($item[clownskin harness]);			//15 mus req
+	tryShirtCreate($item[demonskin jacket]);			//25 mus req
+	tryShirtCreate($item[gnauga hide vest]);			//25 mus req
+	tryShirtCreate($item[tuxedo shirt]);				//35 mus req
+	tryShirtCreate($item[yak anorak]);					//42 mus req
+	tryShirtCreate($item[hipposkin poncho]);			//45 mus req
+	tryShirtCreate($item[lynyrdskin tunic]);			//70 mus req
+	tryShirtCreate($item[bat-ass leather jacket]);		//77 mus req
+
+	//did we succeeded in getting a shirt? use it and then the letter.
+	if(target_shirt != $item[none])
+	{
+		if(useShirtThenLetter()) return true;
+	}
+	
+	//sadness, we couldn't unlock this zone.
+	return false;
+}
+
 boolean LX_melvignShirt()
 {
-	//get torso awareness from melvign the gnome.
+	//Do the quest [The Shirt Off His Lack of Back] to get the skill [Torso Awaregness] from melvign the gnome.	
+	
 	if(hasTorso())
 	{
 		return false;
 	}
 	if(get_property("questM22Shirt") == "finished")
 	{
-		//is it actually possible to finish the quest and not have torso awareness?
+		//is it actually possible to finish the quest and not have torso awareness? if not then this can be delted.
 		return false;
 	}
-	if(internalQuestStatus("questM22Shirt") < 0)
+	if(!unlockThinknerdWarehouse())		//will try to unlock it if it isn't already unlocked.
 	{
-		//TODO try to start the quest first
 		return false;
 	}
 	if(item_amount($item[Professor What Garment]) == 0)
@@ -2439,7 +2553,7 @@ boolean LX_attemptPowerLevel()
 	}
 
 	// [Thinknerd Warehouse] is a scaling zone. might as well grab torso awareness if you do not have it.
-	// If you have torso awareness then this is instead handled with other scaling zones later in this function.
+	// If you do have torso awareness then this is instead handled with other scaling zones later in this function.
 	if(LX_melvignShirt()) return true;
 
 	if(auto_my_path() == "The Source")
@@ -2533,12 +2647,14 @@ boolean LX_attemptPowerLevel()
 	{
 		if(neverendingPartyPowerlevel()) return true;
 	}
-	if(internalQuestStatus("questM22Shirt") > -1)		//TODO replace this check with starting the quest if needed.
+	if(unlockThinknerdWarehouse())
 	{
 		if(autoAdv($location[The Thinknerd Warehouse])) return true;
 	}
+	//else if(
+	//TODO add a different function that spends a wish or adventures trying to unlock thinknerdWarehouse.
 
-	// burn all spare clovers
+	// use spare clovers to powerlevel
 	int cloverLimit = get_property("auto_wandOfNagamar").to_boolean() ? 1 : 0;
 	if(cloversAvailable() > cloverLimit)
 	{

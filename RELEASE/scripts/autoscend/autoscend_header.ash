@@ -33,6 +33,7 @@ boolean LX_spookyravenSecond();
 boolean LX_spookyBedroomCombat();
 boolean LX_guildUnlock();
 boolean LX_hardcoreFoodFarm();
+boolean unlockThinknerdWarehouse();
 boolean LX_melvignShirt();
 boolean LX_attemptPowerLevel();
 boolean LX_attemptFlyering();

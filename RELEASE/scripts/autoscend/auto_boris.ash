@@ -282,6 +282,10 @@ void borisDemandSandwich()
 	{
 		return;
 	}
+	if(get_property("_demandSandwich").to_int() > 2) 		//max 3 casts a day
+	{
+		return;
+	}
 	
 	//use ongoing MP recovery to summon sandwiches as boris if you can get the best sandwich.
 	if(my_level() > 8)
@@ -291,11 +295,14 @@ void borisDemandSandwich()
 			use_skill(1, $skill[Demand Sandwich]);
 		}
 	}
-	//if your level is too low for the best sandwich, summon an inferior one when low on adventures and if you don't already have one in inventory.
+	//if your level is too low for the best sandwich, summon a single inferior sandwich to tide you over when low on adventures and if you don't already have one in inventory.
 	//this part semi relies on a future update to consumption code to make it eat one item at a time.
 	else if(my_adventures() < 8 && item_amount($item[club sandwich]) == 0 && item_amount($item[PB&BP]) == 0)
 	{
-		use_skill(1, $skill[Demand Sandwich]);
+		if(my_mp() > 4 && get_property("_demandSandwich").to_int() < 3)
+		{
+			use_skill(1, $skill[Demand Sandwich]);
+		}
 	}
 }
 
@@ -308,11 +315,16 @@ void borisOngoingLaugh()
 		return;
 	}
 	
+	//don't waste HP on convert, keep at least 10 MP and at least 50% of MP.
 	while((my_hp()+1) < my_maxhp() && my_mp() > 10 && my_mp() > (my_maxmp()/2))
 	{
 		//multi use without risking wastage.
 		int missingHP = my_maxhp() - my_hp();
 		int availableMP = my_mp() - (my_maxmp()/2);
+		if(my_mp() > 10)
+		{
+			availableMP = min(availableMP, (my_mp() - 10));
+		}
 		int castAmount = min(availableMP, (missingHP / 2));
 		use_skill(castAmount, $skill[Laugh it Off]);
 	}

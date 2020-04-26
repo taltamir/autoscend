@@ -299,14 +299,29 @@ void borisDemandSandwich()
 	}
 }
 
+void borisOngoingLaugh()
+{
+	//ongoing conversion of MP to HP to be done after every adventure to prevent wasting MP regen from clancy.
+	//Laugh it off costs 1 MP to cast and gives either 1 or 2 HP randomly.
+	
+	while((my_hp()+1) < my_maxhp() && my_mp() > 10 && my_mp() > (my_maxmp()/2))
+	{
+		use_skill(1, $skill[Laugh it Off]);
+	}
+}
+
 boolean LM_boris()
 {
+	//this function is called early once every loop of doTasks() in autoscend.ash
+	//if something in this function returns true then it will restart the loop and get called again.
+	
 	if(!in_boris())
 	{
 		return false;
 	}
 	
 	borisDemandSandwich();
+	borisOngoingLaugh();
 	boris_buySkills();
 
 	return false;

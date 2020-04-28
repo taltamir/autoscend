@@ -550,7 +550,8 @@ boolean L9_twinPeak()
 		return false;
 	}
 	
-	set_property("choiceAdventure604", "1");	//what is this setting? wiki does not know.
+	set_property("choiceAdventure604", "1");	//welcome to twin peak step 1 = "continue"
+	set_property("choiceAdventure605", "1");	//welcome to twin peak step 2 = "everything goes black"
 	set_property("choiceAdventure606", "0");	//main lodge NC. we swap around this value multiple times. reset it to 0 initially to disable automation to prevent mistakes. Will be changed to the target of where we want to go later on.
 	set_property("choiceAdventure607", "1");	//finish stench / room 237
 	set_property("choiceAdventure608", "1");	//finish food drop / pantry
@@ -560,7 +561,7 @@ boolean L9_twinPeak()
 	set_property("choiceAdventure1056", "1");	//finish init / "now it's dark"
 	set_property("choiceAdventure618", "2");	//burn this hotel pity NC to skip the zone if you spent over 50 adventures there.
 
-	//theoretically the entire if below should go.
+//theoretically the entire if below should go. It is a backwards handler for the intro NC to the zone
 //	if(get_property("twinPeakProgress").to_int() == 0)
 //	{
 //		auto_log_info("Twin Peak", "blue");

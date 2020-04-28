@@ -2414,22 +2414,20 @@ boolean unlockThinknerdWarehouse()
 		return false;
 	}
 	
-	item target_shirt = $item[none];		//needs to be global so we can call it outside boolean hasShirt()
-	boolean hasShirt()
+	item target_shirt = $item[none];
+	boolean hasShirt = false;
+	//one time initial scan of inventory
+	int[item] inventory_snapshot = get_inventory();		//need to refresh inventory_snapshot every time this function is called.
+	foreach it in inventory_snapshot
 	{
-		if(target_shirt != $item[none]) return true;
-		int[item] inventory_snapshot = get_inventory();		//need to refresh inventory_snapshot every time this function is called.
-		foreach it in inventory_snapshot
+		if(item_type(it) == "shirt" && can_equip(it))
 		{
-			if(item_type(it) == "shirt" && can_equip(it))
-			{
-				target_shirt = it;
-				break;
-			}
+			target_shirt = it;
+			hasShirt = true;
+			break;
 		}
-		if(target_shirt != $item[none]) return true;
-		return false;
 	}
+
 	boolean useShirtThenLetter()
 	{
 		equip($slot[shirt], target_shirt);
@@ -2437,30 +2435,32 @@ boolean unlockThinknerdWarehouse()
 		auto_log_error("For some reason boolean unlockThinknerdWarehouse() failed when trying to use the shirt [" + target_shirt + "] to get [Letter for Melvign the Gnome] to start the quest", "red");
 		return false;
 	}
-	void tryShirtCreate(item it)
+	void createWhenHaveNoShirt(item it)
 	{
-		if(!hasShirt() && can_equip(it) && creatable_amount(it) > 0)
+		if(!hasShirt && can_equip(it) && creatable_amount(it) > 0)
 		{
 			if(create(1, it))
 			{
 				target_shirt = it;
+				hasShirt = true;
 			}
 		}
 	}
-	void tryShirtPull(item it)
+	void pullWhenHaveNoShirt(item it)
 	{
-		if(!hasShirt() && can_equip(it) && canPull(it))
+		if(!hasShirt && can_equip(it) && canPull(it))
 		{
 			if(pullXWhenHaveY(it, 1, 0))
 			{
 				target_shirt = it;
+				hasShirt = true;
 			}
 		}
 	}
 	
 	//if you already had a shirt or a letter, then just unlock the quest now
 	if(useLetter()) return true;
-	if(hasShirt())
+	if(hasShirt)
 	{
 		if(useShirtThenLetter()) return true;
 	}
@@ -2468,26 +2468,26 @@ boolean unlockThinknerdWarehouse()
 	//Try to acquire a shirt.
 	//IOTM foldable shirts that cost nothing.
 	//TODO, make these actually work
-	//	tryShirtCreate($item[flaming pink shirt])		//foldable IOTM
-	//	tryShirtCreate($item[origami pasties])			//foldable IOTM
-	// 	tryShirtCreate($item[sugar shirt])				//libram summons sugar sheet which can be folded into sugar shirt
-	//	tryShirtCreate($item[makeshift garbage shirt])	//actually needs januaryToteAcquire($item[makeshift garbage shirt])
+	//	createWhenHaveNoShirt($item[makeshift garbage shirt])	//actually needs januaryToteAcquire($item[makeshift garbage shirt])
+	//	createWhenHaveNoShirt($item[flaming pink shirt])		//foldable IOTM, does it need a pull first?
+	//	createWhenHaveNoShirt($item[origami pasties])			//foldable IOTM, does it need a pull first?
+	// 	createWhenHaveNoShirt($item[sugar shirt])				//libram summons sugar sheet which can be folded into sugar shirt
 	
 	//Spend a pull on a shirt
-	tryShirtPull($item[Sneaky Pete\'s leather jacket]);		//useful IOTM shirt with no requirements to wear
-	tryShirtPull($item[Sneaky Pete\'s leather jacket (collar popped)]);
-	tryShirtPull($item[Professor What T-Shirt]);			//you likely have it, no requirements to wear, very cheap in mall
+	pullWhenHaveNoShirt($item[Sneaky Pete\'s leather jacket]);		//useful IOTM shirt with no requirements to wear
+	pullWhenHaveNoShirt($item[Sneaky Pete\'s leather jacket (collar popped)]);
+	pullWhenHaveNoShirt($item[Professor What T-Shirt]);			//you likely have it, no requirements to wear, very cheap in mall
 	
 	//Smith a shirt. Will likely cost 1 adv
-	tryShirtCreate($item[white snakeskin duster]);		//7 mus req
-	tryShirtCreate($item[clownskin harness]);			//15 mus req
-	tryShirtCreate($item[demonskin jacket]);			//25 mus req
-	tryShirtCreate($item[gnauga hide vest]);			//25 mus req
-	tryShirtCreate($item[tuxedo shirt]);				//35 mus req
-	tryShirtCreate($item[yak anorak]);					//42 mus req
-	tryShirtCreate($item[hipposkin poncho]);			//45 mus req
-	tryShirtCreate($item[lynyrdskin tunic]);			//70 mus req
-	tryShirtCreate($item[bat-ass leather jacket]);		//77 mus req
+	createWhenHaveNoShirt($item[white snakeskin duster]);		//7 mus req
+	createWhenHaveNoShirt($item[clownskin harness]);			//15 mus req
+	createWhenHaveNoShirt($item[demonskin jacket]);				//25 mus req
+	createWhenHaveNoShirt($item[gnauga hide vest]);				//25 mus req
+	createWhenHaveNoShirt($item[tuxedo shirt]);					//35 mus req
+	createWhenHaveNoShirt($item[yak anorak]);					//42 mus req
+	createWhenHaveNoShirt($item[hipposkin poncho]);				//45 mus req
+	createWhenHaveNoShirt($item[lynyrdskin tunic]);				//70 mus req
+	createWhenHaveNoShirt($item[bat-ass leather jacket]);		//77 mus req
 
 	//did we succeeded in getting a shirt? use it and then the letter.
 	if(target_shirt != $item[none])

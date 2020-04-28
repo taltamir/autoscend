@@ -549,29 +549,38 @@ boolean L9_twinPeak()
 	{
 		return false;
 	}
+	
+	set_property("choiceAdventure604", "1");	//what is this setting? wiki does not know.
+	set_property("choiceAdventure606", "0");	//main lodge NC. we swap around this value multiple times. reset it to 0 initially to disable automation to prevent mistakes. Will be changed to the target of where we want to go later on.
+	set_property("choiceAdventure607", "1");	//finish stench / room 237
+	set_property("choiceAdventure608", "1");	//finish food drop / pantry
+	set_property("choiceAdventure609", "1");	//do jar of oil / sound of music... goto 616
+	set_property("choiceAdventure616", "1");	//finish jar of oil / sound of music
+	set_property("choiceAdventure610", "1");	//do init / "who's that" / "to catch a killer"... goto 1056
+	set_property("choiceAdventure1056", "1");	//finish init / "now it's dark"
+	set_property("choiceAdventure618", "2");	//burn this hotel pity NC to skip the zone if you spent over 50 adventures there.
 
-	buffMaintain($effect[Fishy Whiskers], 0, 1, 1);
-	if(get_property("twinPeakProgress").to_int() == 0)
-	{
-		auto_log_info("Twin Peak", "blue");
-		set_property("choiceAdventure604", "1");
-		set_property("choiceAdventure618", "2");
-		buffMaintain($effect[Joyful Resolve], 0, 1, 1);
-		autoAdv(1, $location[Twin Peak]);
-		if(last_monster() != $monster[gourmet gourami])
-		{
-			visit_url("choice.php?pwd&whichchoice=604&option=1&choiceform1=Continue...");
-			visit_url("choice.php?pwd&whichchoice=604&option=1&choiceform1=Everything+goes+black.");
-			set_property("choiceAdventure606", "2");
-			set_property("choiceAdventure608", "1");
-		}
-		return true;
-	}
+	//theoretically the entire if below should go.
+//	if(get_property("twinPeakProgress").to_int() == 0)
+//	{
+//		auto_log_info("Twin Peak", "blue");
+//		autoAdv(1, $location[Twin Peak]);
+//		if(last_monster() != $monster[gourmet gourami])
+//		{
+//			visit_url("choice.php?pwd&whichchoice=604&option=1&choiceform1=Continue...");
+//			visit_url("choice.php?pwd&whichchoice=604&option=1&choiceform1=Everything+goes+black.");
+//		}
+//		return true;
+//	}
 
+	//-combat via combining 2 IOTMs. Needs to be moved to providePlusNonCombat
 	if((my_mp() > 60) || considerGrimstoneGolem(true))
 	{
 		handleBjornify($familiar[Grimstone Golem]);
 	}
+	providePlusNonCombat(25);
+	
+	buffMaintain($effect[Fishy Whiskers], 0, 1, 1);		//heavy rains specific reduce item drop penalty by 10%
 
 	int progress = get_property("twinPeakProgress").to_int();
 	boolean needStench = ((progress & 1) == 0);
@@ -581,41 +590,37 @@ boolean L9_twinPeak()
 
 	int attemptNum = 0;
 	boolean attempt = false;
-	if(needInit)
+	if(!attempt && needInit)
 	{
-		buffMaintain($effect[Adorable Lookout], 0, 1, 1);
-		if(initiative_modifier() < 40.0)
+		if(provideInitiative(40,true))
 		{
-			if((my_class() == $class[Turtle Tamer]) || (my_class() == $class[Seal Clubber]))
-			{
-				buyUpTo(1, $item[Cheap Wind-Up Clock]);
-				buffMaintain($effect[Ticking Clock], 0, 1, 1);
-			}
+			attemptNum = 4;
+			attempt = true;
 		}
-		if(initiative_modifier() < 40.0)
+		else
 		{
-			return false;
+			return false;			//init test shows up last. if we can't do it there is no point in checking rest of function.
 		}
-		attemptNum = 4;
-		attempt = true;
 	}
 
-	if(needJar && (item_amount($item[Jar of Oil]) == 1))
+	if(!attempt && needJar)
 	{
-		attemptNum = 3;
-		attempt = true;
+		if(item_amount($item[Jar of Oil]) == 1)
+		{
+			attemptNum = 3;
+			attempt = true;
+		}
 	}
 
 	if(!attempt && needFood)
 	{
 		float food_drop = item_drop_modifier();
 		food_drop -= numeric_modifier(my_familiar(), "Item Drop", familiar_weight(my_familiar()), equipped_item($slot[familiar]));
-
+		
 		if(my_servant() == $servant[Cat])
 		{
 			food_drop -= numeric_modifier($familiar[Baby Gravy Fairy], "Item Drop", $servant[Cat].level, $item[none]);
 		}
-
 		if((food_drop < 50) && (food_drop >= 20))
 		{
 			if(friars_available() && (!get_property("friarsBlessingReceived").to_boolean()))
@@ -631,6 +636,11 @@ boolean L9_twinPeak()
 		{
 			use(1, $item[Eagle Feather]);
 			food_drop = food_drop + 20;
+		}
+		if((food_drop < 50.0) && (item_amount($item[resolution: be happier]) > 0) && (have_effect($effect[Joyful Resolve]) == 0))
+		{
+			buffMaintain($effect[Joyful Resolve], 0, 1, 1);
+			food_drop = food_drop + 15;
 		}
 		if(food_drop >= 50.0)
 		{
@@ -658,28 +668,21 @@ boolean L9_twinPeak()
 		return false;
 	}
 
-	set_property("choiceAdventure609", "1");
 	if(attemptNum == 1)
 	{
 		set_property("choiceAdventure606", "1");
-		set_property("choiceAdventure607", "1");
 	}
 	else if(attemptNum == 2)
 	{
 		set_property("choiceAdventure606", "2");
-		set_property("choiceAdventure608", "1");
 	}
 	else if(attemptNum == 3)
 	{
 		set_property("choiceAdventure606", "3");
-		set_property("choiceAdventure609", "1");
-		set_property("choiceAdventure616", "1");
 	}
 	else if(attemptNum == 4)
 	{
 		set_property("choiceAdventure606", "4");
-		set_property("choiceAdventure610", "1");
-		set_property("choiceAdventure1056", "1");
 	}
 
 	int trimmers = item_amount($item[Rusty Hedge Trimmers]);
@@ -747,12 +750,8 @@ boolean L9_twinPeak()
 		}
 		return true;
 	}
-	else
-	{
-		autoAdv(1, $location[Twin Peak]);
-		handleFamiliar("item");
-	}
-	return true;
+
+	return autoAdv(1, $location[Twin Peak]);
 }
 
 boolean L9_oilPeak()

@@ -2551,15 +2551,12 @@ boolean LX_attemptPowerLevel()
 		loopHandlerDelayAll();
 		return true;
 	}
-
-	// [Thinknerd Warehouse] is a scaling zone. might as well grab torso awareness if you do not have it.
-	// If you do have torso awareness then this is instead handled with other scaling zones later in this function.
-	if(LX_melvignShirt()) return true;
 	
 	//The Source path specific powerleveling
 	LX_attemptPowerLevelTheSource();
 
 	//scaling damage zones
+	if(LX_melvignShirt()) return true;		// If you do not have torso awaregness do it first. If you have that skill do thinknerd last.
 	if(elementalPlanes_access($element[stench]) && auto_have_skill($skill[Summon Smithsness]) && (get_property("auto_beatenUpCount").to_int() == 0))
 	{
 		if(autoAdv($location[Uncle Gator\'s Country Fun-Time Liquid Waste Sluice])) return true;
@@ -2584,7 +2581,7 @@ boolean LX_attemptPowerLevel()
 	{
 		if(neverendingPartyPowerlevel()) return true;
 	}
-	if(unlockThinknerdWarehouse())
+	if(unlockThinknerdWarehouse())			// as per note above. doing thinknerd as last priority if you have torso awaregness.
 	{
 		if(autoAdv($location[The Thinknerd Warehouse])) return true;
 	}

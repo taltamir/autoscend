@@ -308,24 +308,35 @@ void borisDemandSandwich()
 
 void borisOngoingLaugh()
 {
-	//ongoing conversion of MP to HP to be done after every adventure to prevent wasting MP regen from clancy.
-	//Laugh it off costs 1 MP to cast and gives either 1 or 2 HP randomly.
+	//Convert excess MP regen for boris into HP if possible to prevent it from being wasted.
+	//Mostly this comes from clancy, but we want to account for other sources.
 	if(!in_boris())
 	{
 		return;
 	}
 	
-	//don't waste HP on convert, keep at least 10 MP and at least 50% of MP.
-	while((my_hp()+1) < my_maxhp() && my_mp() > 10 && my_mp() > (my_maxmp()/2))
+	float max_potential_mp_regen = ceil(simValue("mp regen max"));
+	float missing_mp = my_maxmp() - my_mp();
+	float potential_mp_wasted = 0;
+	if(max_potential_mp_regen > missing_mp)
 	{
-		//multi use without risking wastage.
+		potential_mp_wasted = max_potential_mp_regen - missing_mp;
+	}
+	
+	//Laugh it off costs 1 MP to cast and gives either 1 or 2 HP randomly.
+	while(my_hp() < my_maxhp() && potential_mp_wasted > 0)
+	{
+		//multi use without risking wastage. Need to loop a few times because we can't predict what we actually roll for healing.
 		int missingHP = my_maxhp() - my_hp();
-		int availableMP = my_mp() - (my_maxmp()/2);
-		if(my_mp() > 10)
+		int castAmount = min(potential_mp_wasted, missingHP / 2);
+		
+		//at exactly 1 HP missing there is a 50% chance of wasting 1 point of HP healed. Better than 100% chance of wasting MP though, so do it.
+		//also this prevents an infinite loop at 1HP missing. Keep that in mind if you remove this
+		if(missingHP == 1)	
 		{
-			availableMP = min(availableMP, (my_mp() - 10));
+			castAmount = 1;
 		}
-		int castAmount = min(availableMP, (missingHP / 2));
+		
 		use_skill(castAmount, $skill[Laugh it Off]);
 	}
 }

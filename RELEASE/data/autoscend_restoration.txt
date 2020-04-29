@@ -110,3 +110,4 @@
 113	linen bandages	item	30	0	0	0	none	none
 114	cotton bandages	item	60	0	0	0	none	none
 115	silk bandages	item	120	0	0	0	none	none
+116	Laugh it Off	skill	1.5	0	0	0	none	none

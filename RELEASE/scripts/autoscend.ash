@@ -2555,72 +2555,9 @@ boolean LX_attemptPowerLevel()
 	// [Thinknerd Warehouse] is a scaling zone. might as well grab torso awareness if you do not have it.
 	// If you do have torso awareness then this is instead handled with other scaling zones later in this function.
 	if(LX_melvignShirt()) return true;
-
-	if(auto_my_path() == "The Source")
-	{
-		if (get_property("lastSecondFloorUnlock").to_int() == my_ascensions())
-		{
-			if(get_property("barrelShrineUnlocked").to_boolean())
-			{
-				if(cloversAvailable() == 0)
-				{
-					handleBarrelFullOfBarrels(false);
-					string temp = visit_url("barrel.php");
-					temp = visit_url("choice.php?whichchoice=1099&pwd=&option=2");
-					handleBarrelFullOfBarrels(false);
-					return true;
-				}
-				stat myStat = my_primestat();
-				if(my_basestat(myStat) >= 148)
-				{
-					return false;
-				}
-				else if(my_basestat(myStat) >= 125)
-				{
-					//Should probably prefer to check what equipment failures we may be having.
-					if((my_basestat($stat[Muscle]) < my_basestat(myStat)) && (my_basestat($stat[Muscle]) < 70))
-					{
-						myStat = $stat[Muscle];
-					}
-					if((my_basestat($stat[Mysticality]) < my_basestat(myStat)) && (my_basestat($stat[Mysticality]) < 70))
-					{
-						myStat = $stat[Mysticality];
-					}
-					if((my_basestat($stat[Moxie]) < my_basestat(myStat)) && (my_basestat($stat[Moxie]) < 70))
-					{
-						myStat = $stat[Moxie];
-					}
-				}
-				//Else, default to mainstat.
-
-				//Determine where to go for clover stats, do not worry about clover failures
-				location whereTo = $location[none];
-				switch(myStat)
-				{
-				case $stat[Muscle]:			whereTo = $location[The Haunted Gallery];				break;
-				case $stat[Mysticality]:	whereTo = $location[The Haunted Bathroom];				break;
-				case $stat[Moxie]:			whereTo = $location[The Haunted Ballroom];				break;
-				}
-
-				if (whereTo == $location[The Haunted Ballroom] && internalQuestStatus("questM21Dance") > 3)
-				{
-					use(item_amount($item[ten-leaf clover]), $item[ten-leaf clover]);
-					LX_spookyBedroomCombat();
-					return true;
-				}
-				if(cloversAvailable() > 0)
-				{
-					cloverUsageInit();
-				}
-				autoAdv(1, whereTo);
-				cloverUsageFinish();
-				return true;
-			}
-			//Banish mahogant, elegant after gown only. (Harold\'s Bell?)
-			LX_spookyBedroomCombat();
-			return true;
-		}
-	}
+	
+	//The Source path specific powerleveling
+	LX_attemptPowerLevelTheSource();
 
 	//scaling damage zones
 	if(elementalPlanes_access($element[stench]) && auto_have_skill($skill[Summon Smithsness]) && (get_property("auto_beatenUpCount").to_int() == 0))

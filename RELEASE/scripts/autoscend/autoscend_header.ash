@@ -983,6 +983,7 @@ int stomach_left();											//Defined in autoscend/auto_util.ash
 boolean theSource_buySkills();								//Defined in autoscend/auto_theSource.ash
 boolean theSource_initializeSettings();						//Defined in autoscend/auto_theSource.ash
 boolean theSource_oracle();									//Defined in autoscend/auto_theSource.ash
+boolean LX_attemptPowerLevelTheSource();					//Defined in autoscend/auto_theSource.ash
 boolean timeSpinnerAdventure();								//Defined in autoscend/auto_mr2016.ash
 boolean timeSpinnerAdventure(string option);				//Defined in autoscend/auto_mr2016.ash
 boolean timeSpinnerCombat(monster goal);					//Defined in autoscend/auto_mr2016.ash

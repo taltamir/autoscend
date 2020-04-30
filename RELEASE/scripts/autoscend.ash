@@ -3530,17 +3530,6 @@ boolean LX_craftAcquireItems()
 		}
 	}
 
-	if(item_amount($item[Letter For Melvign The Gnome]) > 0)
-	{
-		use(1, $item[Letter For Melvign The Gnome]);
-		if(get_property("questM22Shirt") == "unstarted")
-		{
-			auto_log_warning("Mafia did not register using the Melvign letter...", "red");
-			cli_execute("refresh inv");
-			set_property("questM22Shirt", "started");
-		}
-	}
-
 	if(auto_my_path() != "Community Service")
 	{
 		if(item_amount($item[Portable Pantogram]) > 0)

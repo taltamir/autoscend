@@ -51,9 +51,9 @@ boolean januaryToteAcquire(item it)
 		return false;
 	}
 	
-	//prevent wasting charges by not replacing an item with itself so long as charges remain.
+	//prevent wasting charges by not replacing an item with itself so long as charges remain from yesterday.
 	//for example if you have 10 charges on garbage shirt from yesterday, don't fold a new one as that wastes those 10 charges from yesterday
-	//do not use possessEquipment nor equipmentAmount here, they have special handling for tote foldables that always counts number of totes instead of foldables. Resulting in this if always being true, which in turn returns false here without folding any new items.
+	//do not use possessEquipment nor equipmentAmount here, they have special handling for tote foldables that always counts number of january's garbage totes instead of the target item. Resulting in this if always being true.
 	if(item_amount(it) + equipped_amount(it) > 0)
 	{
 		int leftover_charges = 0;
@@ -71,6 +71,9 @@ boolean januaryToteAcquire(item it)
 			return false;
 		}
 	}
+	
+	//if needed, disable mafia warning halting for popup confirmation of wasting leftover charges
+	set_property("_garbageItemChanged", true);
 
 	int choice = 0;
 	switch(it)

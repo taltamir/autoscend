@@ -143,46 +143,6 @@ boolean LX_unlockThinknerdWarehouse(boolean spend_resources)
 }
 
 boolean zone_unlock(location loc){
-	boolean unlock_thinknerd(){
-		auto_log_debug("Attempting to open " + loc + " by acquiring/equipping a shirt.");
-
-		item shirt = $item[none];
-		foreach i in get_inventory(){
-			if(to_slot(i) == $slot[shirt]){
-				shirt = i;
-				break;
-			}
-		}
-
-		if(shirt == $item[none] && isjanuaryToteAvailable() && januaryToteAcquire($item[Makeshift Garbage Shirt])){
-			shirt = $item[Makeshift Garbage Shirt];
-		}
-
-		if(shirt == $item[none] && shouldUseWishes() && wishesAvailable() > 0){
-			shirt = to_item("blessed rustproof +2 gray dragon scale mail");
-			makeGenieWish("for a " + shirt);
-			if(item_amount(shirt) == 0){
-				shirt = $item[none];
-			}
-		}
-
-		if(shirt == $item[none] && auto_have_skill($skill[Armorcraftiness])){
-			static boolean[item] craftable_shirts = $items[barskin cloak, bat-ass leather jacket, clownskin harness, demonskin jacket, gnauga hide vest, hipposkin poncho, lynyrdskin tunic, tuxedo shirt, white snakeskin duster, yak anorak];
-
-			foreach craftable in craftable_shirts{
-				if(creatable_amount(craftable) > 0 && create(1, craftable)){
-					shirt = craftable;
-					break;
-				}
-			}
-		}
-
-		if(shirt == $item[none] && neverendingPartyAvailable()){
-			auto_log_warning("Couldnt find a shirt to unlock Thinknerd. You may want to run NEP with +item to get a shirt");
-		}
-
-		return shirt != $item[none] && autoEquip($slot[shirt], shirt);
-	}
 
 	boolean unlocked = false;
 	if(loc == $location[The Thinknerd Warehouse]){

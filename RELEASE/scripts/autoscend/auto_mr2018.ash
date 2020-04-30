@@ -46,29 +46,30 @@ int januaryToteTurnsLeft(item it)
 
 boolean januaryToteAcquire(item it)
 {
-	if(possessEquipment(it))
+	if(!isjanuaryToteAvailable())
 	{
-		int score = 1;
-		switch(it)
+		return false;
+	}
+	
+	//prevent wasting charges by not replacing an item with itself so long as charges remain.
+	//for example if you have 10 charges on garbage shirt from yesterday, don't fold a new one as that wastes those 10 charges from yesterday
+	//do not use possessEquipment nor equipmentAmount here, they have special handling for tote foldables that always counts number of totes instead of foldables. Resulting in this if always being true, which in turn returns false here without folding any new items.
+	if(item_amount(it) + equipped_amount(it) > 0)
+	{
+		int leftover_charges = 0;
+		if(!get_property("_garbageItemChanged").to_boolean())		//if we changed it today then we are counting today's charges.
 		{
-		case $item[Deceased Crimbo Tree]:		score = get_property("garbageTreeCharge").to_int();			break;
-		case $item[Broken Champagne Bottle]:	score = get_property("garbageChampagneCharge").to_int();	break;
-		case $item[Makeshift Garbage Shirt]:	score = get_property("garbageShirtCharge").to_int();		break;
-		}
-		if(score == 0)
-		{
-			if(get_property("_garbageItemChanged").to_boolean())
+			switch(it)
 			{
-				score = 1;
+			case $item[Deceased Crimbo Tree]:		leftover_charges = get_property("garbageTreeCharge").to_int();			break;
+			case $item[Broken Champagne Bottle]:	leftover_charges = get_property("garbageChampagneCharge").to_int();		break;
+			case $item[Makeshift Garbage Shirt]:	leftover_charges = get_property("garbageShirtCharge").to_int();			break;
 			}
 		}
-		if(score > 0)
+		if(leftover_charges > 0)
 		{
 			return false;
 		}
-	}
-	if(!isjanuaryToteAvailable()){
-		return false;
 	}
 
 	int choice = 0;
@@ -102,25 +103,26 @@ boolean januaryToteAcquire(item it)
 
 	if(choice == 7)
 	{
-		if(get_property("questM22Shirt") != "unstarted")
+		//can only get one letter per ascension
+		if(get_property("questM22Shirt") != "unstarted" || item_amount($item[Letter For Melvign The Gnome]) > 0)
 		{
 			return false;
 		}
-		if(hasTorso())
-		{
-			return false;
-		}
-		if(item_amount($item[Letter For Melvign The Gnome]) > 0)
-		{
-			return false;
-		}
-		choice = 5;
+		visit_url("inv_use.php?pwd=" + my_hash() + "&which=3&whichitem=9690", false);	//rummage in your garbage tote
+		run_choice(5);																	//get garbage shirt
+		visit_url("inv_equip.php?pwd=&which=2&action=equip&whichitem=9699");		//url fail to equip shirt to get a letter
 	}
-
-	string temp = visit_url("inv_use.php?pwd=" + my_hash() + "&which=3&whichitem=9690", false);
-	temp = visit_url("choice.php?pwd=&whichchoice=1275&option=" + choice);
-
-	return true;
+	else
+	{
+		visit_url("inv_use.php?pwd=" + my_hash() + "&which=3&whichitem=9690", false);	//rummage in your garbage tote
+		run_choice(choice);																//get desired item
+	}
+	
+	if(item_amount(it) > 0)
+	{
+		return true;
+	}
+	return false;
 }
 
 boolean godLobsterCombat()

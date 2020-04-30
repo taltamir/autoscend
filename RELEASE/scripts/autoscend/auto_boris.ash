@@ -337,6 +337,7 @@ void borisOngoingLaugh()
 			castAmount = 1;
 		}
 		
+		potential_mp_wasted = potential_mp_wasted - castAmount;		
 		use_skill(castAmount, $skill[Laugh it Off]);
 	}
 }

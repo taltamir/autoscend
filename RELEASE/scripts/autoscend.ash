@@ -2385,15 +2385,14 @@ boolean powerLevelAdjustment()
 	return false;
 }
 
-boolean unlockThinknerdWarehouse()
+boolean LX_unlockThinknerdWarehouse(boolean spend_resources)
 {
-	//returns true if you have access to [The Thinknerd Warehouse], if you don't have access tries to unlock it and then return true.
-	//returns false if fails to unlock.
+	//unlocks [The Thinknerd Warehouse], returns true if successful or adv is spent
 	//much easier to do if you already have torso awaregness
 	
 	if(internalQuestStatus("questM22Shirt") > -1)
 	{
-		return true;
+		return false;
 	}
 	
 	//unlocking is a multi step process. We want to try things in reverse to conserve resources and in case some steps were already complete.
@@ -2416,6 +2415,7 @@ boolean unlockThinknerdWarehouse()
 	
 	item target_shirt = $item[none];
 	boolean hasShirt = false;
+	
 	//one time initial scan of inventory
 	int[item] inventory_snapshot = get_inventory();		//need to refresh inventory_snapshot every time this function is called.
 	foreach it in inventory_snapshot
@@ -2432,7 +2432,7 @@ boolean unlockThinknerdWarehouse()
 	{
 		equip($slot[shirt], target_shirt);
 		if(useLetter()) return true;
-		auto_log_error("For some reason boolean unlockThinknerdWarehouse() failed when trying to use the shirt [" + target_shirt + "] to get [Letter for Melvign the Gnome] to start the quest", "red");
+		auto_log_error("For some reason LX_unlockThinknerdWarehouse failed when trying to use the shirt [" + target_shirt + "] to get [Letter for Melvign the Gnome] to start the quest", "red");
 		return false;
 	}
 	void createWhenHaveNoShirt(item it)
@@ -2479,18 +2479,29 @@ boolean unlockThinknerdWarehouse()
 	pullWhenHaveNoShirt($item[Professor What T-Shirt]);			//you likely have it, no requirements to wear, very cheap in mall
 	
 	//Smith a shirt. Will likely cost 1 adv
-	createWhenHaveNoShirt($item[white snakeskin duster]);		//7 mus req
-	createWhenHaveNoShirt($item[clownskin harness]);			//15 mus req
-	createWhenHaveNoShirt($item[demonskin jacket]);				//25 mus req
-	createWhenHaveNoShirt($item[gnauga hide vest]);				//25 mus req
-	createWhenHaveNoShirt($item[tuxedo shirt]);					//35 mus req
-	createWhenHaveNoShirt($item[yak anorak]);					//42 mus req
-	createWhenHaveNoShirt($item[hipposkin poncho]);				//45 mus req
-	createWhenHaveNoShirt($item[lynyrdskin tunic]);				//70 mus req
-	createWhenHaveNoShirt($item[bat-ass leather jacket]);		//77 mus req
-
+	if(spend_resources || knoll_available())
+	{
+		createWhenHaveNoShirt($item[white snakeskin duster]);		//7 mus req
+		createWhenHaveNoShirt($item[clownskin harness]);			//15 mus req
+		createWhenHaveNoShirt($item[demonskin jacket]);				//25 mus req
+		createWhenHaveNoShirt($item[gnauga hide vest]);				//25 mus req
+		createWhenHaveNoShirt($item[tuxedo shirt]);					//35 mus req
+		createWhenHaveNoShirt($item[yak anorak]);					//42 mus req
+		createWhenHaveNoShirt($item[hipposkin poncho]);				//45 mus req
+		createWhenHaveNoShirt($item[lynyrdskin tunic]);				//70 mus req
+		createWhenHaveNoShirt($item[bat-ass leather jacket]);		//77 mus req
+	}
+	
+	if(spend_resources && wishesAvailable() > 0 && shouldUseWishes())
+	{
+		makeGenieWish("for a blessed rustproof +2 gray dragon scale mail");
+	}
+	
+	//TODO adventure to acquire shirt
+	//if(spend_resources && hasTorso())
+	
 	//did we succeeded in getting a shirt? use it and then the letter.
-	if(target_shirt != $item[none])
+	if(hasShirt)
 	{
 		if(useShirtThenLetter()) return true;
 	}
@@ -2512,10 +2523,14 @@ boolean LX_melvignShirt()
 		//is it actually possible to finish the quest and not have torso awareness? if not then this can be delted.
 		return false;
 	}
-	if(!unlockThinknerdWarehouse())		//will try to unlock it if it isn't already unlocked.
+	if(internalQuestStatus("questM22Shirt") < 0)	//if quest has not started
 	{
-		return false;
+		if(!LX_unlockThinknerdWarehouse(false))		//if failed to start the quest without spending adv or wish
+		{
+			return false;
+		}
 	}
+	
 	if(item_amount($item[Professor What Garment]) == 0)
 	{
 		return autoAdv($location[The Thinknerd Warehouse]);
@@ -2581,12 +2596,15 @@ boolean LX_attemptPowerLevel()
 	{
 		if(neverendingPartyPowerlevel()) return true;
 	}
-	if(unlockThinknerdWarehouse())			// as per note above. doing thinknerd as last priority if you have torso awaregness.
+	if(internalQuestStatus("questM22Shirt") > -1)	//do we have access to [The Thinknerd Warehouse]?
 	{
-		if(autoAdv($location[The Thinknerd Warehouse])) return true;
+		if(autoAdv($location[The Thinknerd Warehouse])) return true;		//powerlevel in thinknerd warehouse
 	}
-	//else if(
-	//TODO add a different function that spends a wish or adventures trying to unlock thinknerdWarehouse.
+	else
+	{
+		//try to gain access to thinknerd warehouse. Be willing to spend wish or adv
+		if(LX_unlockThinknerdWarehouse(true)) return true;
+	}
 
 	// use spare clovers to powerlevel
 	int cloverLimit = get_property("auto_wandOfNagamar").to_boolean() ? 1 : 0;

@@ -2395,6 +2395,8 @@ boolean LX_unlockThinknerdWarehouse(boolean spend_resources)
 		return false;
 	}
 	
+	auto_log_debug("Trying to unlock [The Thinknerd Warehouse] with spend_resources set to " + spend_resources);
+	
 	//unlocking is a multi step process. We want to try things in reverse to conserve resources and in case some steps were already complete.
 	
 	boolean useLetter()
@@ -2413,6 +2415,12 @@ boolean LX_unlockThinknerdWarehouse(boolean spend_resources)
 		return false;
 	}
 	
+//	boolean sufficientStats(int mus_req, int mys_req, int mox_req)
+//	{
+//		return (my_basestat($stat[muscle]) >= mus_req && my_basestat($stat[mysticality]) >= mys_req && my_basestat($stat[moxie]) >= mox_req)
+//	}
+//can_equip actually also tests if you have torso awareness. So it needs to be removed and replaced. Can you actually get the melvign letter with a shirt for which your stats are too low? if so the whole thing is a lot simpler. Otherwise the above function is needed. And one time initial scan will have to be refactored as well.
+	
 	item target_shirt = $item[none];
 	boolean hasShirt = false;
 	
@@ -2420,26 +2428,26 @@ boolean LX_unlockThinknerdWarehouse(boolean spend_resources)
 	int[item] inventory_snapshot = get_inventory();		//need to refresh inventory_snapshot every time this function is called.
 	foreach it in inventory_snapshot
 	{
-		if(item_type(it) == "shirt" && can_equip(it))
+		if(item_type(it) == "shirt")
 		{
 			target_shirt = it;
 			hasShirt = true;
 			break;
 		}
 	}
-
+	
 	boolean useShirtThenLetter()
 	{
-		equip($slot[shirt], target_shirt);
+		string temp = visit_url("inv_equip.php?pwd&which=2&action=equip&whichitem=" + target_shirt.to_int());
 		if(useLetter()) return true;
 		auto_log_error("For some reason LX_unlockThinknerdWarehouse failed when trying to use the shirt [" + target_shirt + "] to get [Letter for Melvign the Gnome] to start the quest", "red");
 		return false;
 	}
 	void createWhenHaveNoShirt(item it)
 	{
-		if(!hasShirt && can_equip(it) && creatable_amount(it) > 0)
+		if(!hasShirt && creatable_amount(it) > 0)
 		{
-			if(create(1, it))
+			if(acquireOrPull(it))
 			{
 				target_shirt = it;
 				hasShirt = true;
@@ -2448,7 +2456,7 @@ boolean LX_unlockThinknerdWarehouse(boolean spend_resources)
 	}
 	void pullWhenHaveNoShirt(item it)
 	{
-		if(!hasShirt && can_equip(it) && canPull(it))
+		if(!hasShirt && canPull(it))
 		{
 			if(pullXWhenHaveY(it, 1, 0))
 			{

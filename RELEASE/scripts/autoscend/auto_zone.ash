@@ -109,6 +109,9 @@ boolean LX_unlockThinknerdWarehouse(boolean spend_resources)
 	
 	//Try to acquire a shirt.
 	//IOTM foldable shirts that cost nothing.
+	januaryToteAcquire($item[Letter For Melvign The Gnome]);
+	if(useLetter()) return true;
+	
 	//TODO, make these actually work
 	//	createWhenHaveNoShirt($item[makeshift garbage shirt])	//actually needs januaryToteAcquire($item[makeshift garbage shirt])
 	//	createWhenHaveNoShirt($item[flaming pink shirt])		//foldable IOTM, does it need a pull first?
@@ -156,10 +159,6 @@ boolean zone_unlock(location loc){
 	boolean unlock_thinknerd(){
 		auto_log_debug("Attempting to open " + loc + " by acquiring/equipping a shirt.");
 
-		if(!auto_have_skill($skill[Torso Awaregness])){
-			return false;
-		}
-
 		item shirt = $item[none];
 		foreach i in get_inventory(){
 			if(to_slot(i) == $slot[shirt]){
@@ -200,7 +199,7 @@ boolean zone_unlock(location loc){
 
 	boolean unlocked = false;
 	if(loc == $location[The Thinknerd Warehouse]){
-		unlocked = unlock_thinknerd();
+		unlocked = LX_unlockThinknerdWarehouse(false);
 	} else{
 		auto_log_debug("Dont know how to unlock " + loc);
 		return false;

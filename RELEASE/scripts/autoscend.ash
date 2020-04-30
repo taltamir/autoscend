@@ -3323,15 +3323,6 @@ boolean LX_craftAcquireItems()
 		use(item_amount($item[Ten-Leaf Clover]), $item[Ten-Leaf Clover]);
 	}
 
-	if(get_property("questM22Shirt") == "unstarted")
-	{
-		januaryToteAcquire($item[Letter For Melvign The Gnome]);
-		if(possessEquipment($item[Makeshift Garbage Shirt]))
-		{
-			string temp = visit_url("inv_equip.php?pwd&which=2&action=equip&whichitem=" + to_int($item[Makeshift Garbage Shirt]));
-		}
-	}
-
 	if((get_property("lastGoofballBuy").to_int() != my_ascensions()) && (internalQuestStatus("questL03Rat") >= 0))
 	{
 		visit_url("place.php?whichplace=woods");

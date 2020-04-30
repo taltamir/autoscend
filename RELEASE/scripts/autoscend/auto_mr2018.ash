@@ -106,21 +106,28 @@ boolean januaryToteAcquire(item it)
 		{
 			return false;
 		}
-		if(hasTorso())
-		{
-			return false;
-		}
 		if(item_amount($item[Letter For Melvign The Gnome]) > 0)
 		{
 			return false;
 		}
-		choice = 5;
+		string temp = visit_url("inv_use.php?pwd=" + my_hash() + "&which=3&whichitem=9690", false);
+		temp = visit_url("choice.php?pwd=&whichchoice=1275&option=5");
+		temp = visit_url("inv_equip.php?pwd&which=2&action=equip&whichitem=9699");
+		if(item_amount($item[Letter For Melvign The Gnome]) > 0)
+		{
+			return true;
+		}
+		else return false;
 	}
 
 	string temp = visit_url("inv_use.php?pwd=" + my_hash() + "&which=3&whichitem=9690", false);
 	temp = visit_url("choice.php?pwd=&whichchoice=1275&option=" + choice);
-
-	return true;
+	
+	if(item_amount(it) > 0)
+	{
+		return true;
+	}
+	return false;
 }
 
 boolean godLobsterCombat()

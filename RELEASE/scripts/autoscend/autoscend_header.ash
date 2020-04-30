@@ -33,7 +33,6 @@ boolean LX_spookyravenSecond();
 boolean LX_spookyBedroomCombat();
 boolean LX_guildUnlock();
 boolean LX_hardcoreFoodFarm();
-boolean LX_unlockThinknerdWarehouse(boolean spend_resources);
 boolean LX_melvignShirt();
 boolean LX_attemptPowerLevel();
 boolean LX_attemptFlyering();
@@ -1239,6 +1238,7 @@ generic_t zone_needItem(location loc);						//Defined in autoscend/auto_zone.ash
 generic_t zone_difficulty(location loc);					//Defined in autoscend/auto_zone.ash
 generic_t zone_combatMod(location loc);						//Defined in autoscend/auto_zone.ash
 generic_t zone_delay(location loc);							//Defined in autoscend/auto_zone.ash
+boolean LX_unlockThinknerdWarehouse(boolean spend_resources);		//Defined in autoscend/auto_zone.ash
 generic_t zone_available(location loc);						//Defined in autoscend/auto_zone.ash
 boolean zone_unlock(location loc);
 location[int] zone_list();									//Defined in autoscend/auto_zone.ash

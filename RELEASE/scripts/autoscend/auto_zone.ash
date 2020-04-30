@@ -19,6 +19,139 @@ item[int] drops_available();
 item[int] hugpocket_available();
 boolean is_ghost_in_zone(location loc);
 
+boolean LX_unlockThinknerdWarehouse(boolean spend_resources)
+{
+	//unlocks [The Thinknerd Warehouse], returns true if successful or adv is spent
+	//much easier to do if you already have torso awaregness
+	
+	if(internalQuestStatus("questM22Shirt") > -1)
+	{
+		return false;
+	}
+	
+	auto_log_debug("Trying to unlock [The Thinknerd Warehouse] with spend_resources set to " + spend_resources);
+	
+	//unlocking is a multi step process. We want to try things in reverse to conserve resources and in case some steps were already complete.
+	
+	boolean useLetter()
+	{
+		if(item_amount($item[Letter for Melvign the Gnome]) > 0)
+		{
+			if(use(1, $item[Letter for Melvign the Gnome]))
+			{
+				return true;
+			}
+			else
+			{
+				abort("Somehow failed to use [Letter for Melvign the Gnome]... aborting to prevent infinite loops");
+			}
+		}
+		return false;
+	}
+	
+//	boolean sufficientStats(int mus_req, int mys_req, int mox_req)
+//	{
+//		return (my_basestat($stat[muscle]) >= mus_req && my_basestat($stat[mysticality]) >= mys_req && my_basestat($stat[moxie]) >= mox_req)
+//	}
+//can_equip actually also tests if you have torso awareness. So it needs to be removed and replaced. Can you actually get the melvign letter with a shirt for which your stats are too low? if so the whole thing is a lot simpler. Otherwise the above function is needed. And one time initial scan will have to be refactored as well.
+	
+	item target_shirt = $item[none];
+	boolean hasShirt = false;
+	
+	//one time initial scan of inventory
+	int[item] inventory_snapshot = get_inventory();		//need to refresh inventory_snapshot every time this function is called.
+	foreach it in inventory_snapshot
+	{
+		if(item_type(it) == "shirt")
+		{
+			target_shirt = it;
+			hasShirt = true;
+			break;
+		}
+	}
+	
+	boolean useShirtThenLetter()
+	{
+		string temp = visit_url("inv_equip.php?pwd&which=2&action=equip&whichitem=" + target_shirt.to_int());
+		if(useLetter()) return true;
+		auto_log_error("For some reason LX_unlockThinknerdWarehouse failed when trying to use the shirt [" + target_shirt + "] to get [Letter for Melvign the Gnome] to start the quest", "red");
+		return false;
+	}
+	void createWhenHaveNoShirt(item it)
+	{
+		if(!hasShirt && creatable_amount(it) > 0)
+		{
+			if(acquireOrPull(it))
+			{
+				target_shirt = it;
+				hasShirt = true;
+			}
+		}
+	}
+	void pullWhenHaveNoShirt(item it)
+	{
+		if(!hasShirt && canPull(it))
+		{
+			if(pullXWhenHaveY(it, 1, 0))
+			{
+				target_shirt = it;
+				hasShirt = true;
+			}
+		}
+	}
+	
+	//if you already had a shirt or a letter, then just unlock the quest now
+	if(useLetter()) return true;
+	if(hasShirt)
+	{
+		if(useShirtThenLetter()) return true;
+	}
+	
+	//Try to acquire a shirt.
+	//IOTM foldable shirts that cost nothing.
+	//TODO, make these actually work
+	//	createWhenHaveNoShirt($item[makeshift garbage shirt])	//actually needs januaryToteAcquire($item[makeshift garbage shirt])
+	//	createWhenHaveNoShirt($item[flaming pink shirt])		//foldable IOTM, does it need a pull first?
+	//	createWhenHaveNoShirt($item[origami pasties])			//foldable IOTM, does it need a pull first?
+	// 	createWhenHaveNoShirt($item[sugar shirt])				//libram summons sugar sheet which can be folded into sugar shirt
+	
+	//Spend a pull on a shirt
+	pullWhenHaveNoShirt($item[Sneaky Pete\'s leather jacket]);		//useful IOTM shirt with no requirements to wear
+	pullWhenHaveNoShirt($item[Sneaky Pete\'s leather jacket (collar popped)]);
+	pullWhenHaveNoShirt($item[Professor What T-Shirt]);			//you likely have it, no requirements to wear, very cheap in mall
+	
+	//Smith a shirt. Will likely cost 1 adv
+	if(spend_resources || knoll_available())
+	{
+		createWhenHaveNoShirt($item[white snakeskin duster]);		//7 mus req
+		createWhenHaveNoShirt($item[clownskin harness]);			//15 mus req
+		createWhenHaveNoShirt($item[demonskin jacket]);				//25 mus req
+		createWhenHaveNoShirt($item[gnauga hide vest]);				//25 mus req
+		createWhenHaveNoShirt($item[tuxedo shirt]);					//35 mus req
+		createWhenHaveNoShirt($item[yak anorak]);					//42 mus req
+		createWhenHaveNoShirt($item[hipposkin poncho]);				//45 mus req
+		createWhenHaveNoShirt($item[lynyrdskin tunic]);				//70 mus req
+		createWhenHaveNoShirt($item[bat-ass leather jacket]);		//77 mus req
+	}
+	
+	if(spend_resources && wishesAvailable() > 0 && shouldUseWishes())
+	{
+		makeGenieWish("for a blessed rustproof +2 gray dragon scale mail");
+	}
+	
+	//TODO adventure to acquire shirt
+	//if(spend_resources && hasTorso())
+	
+	//did we succeeded in getting a shirt? use it and then the letter.
+	if(hasShirt)
+	{
+		if(useShirtThenLetter()) return true;
+	}
+	
+	//sadness, we couldn't unlock this zone.
+	return false;
+}
+
 boolean zone_unlock(location loc){
 	boolean unlock_thinknerd(){
 		auto_log_debug("Attempting to open " + loc + " by acquiring/equipping a shirt.");

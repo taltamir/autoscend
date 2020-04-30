@@ -59,17 +59,16 @@ boolean LX_unlockThinknerdWarehouse(boolean spend_resources)
 	boolean hasShirt = false;
 	
 	//one time initial scan of inventory
-	int[item] inventory_snapshot = get_inventory();		//need to refresh inventory_snapshot every time this function is called.
-	foreach it in inventory_snapshot
+	foreach it in get_inventory()
 	{
-		if(item_type(it) == "shirt")
+		if(to_slot(it) == $slot[shirt])
 		{
 			target_shirt = it;
 			hasShirt = true;
 			break;
 		}
 	}
-	
+		
 	boolean useShirtThenLetter()
 	{
 		if(!hasShirt)

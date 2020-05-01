@@ -51,14 +51,18 @@ boolean januaryToteAcquire(item it)
 		return false;
 	}
 	
-	//prevent wasting charges by not replacing an item with itself so long as charges remain from yesterday.
-	//for example if you have 10 charges on garbage shirt from yesterday, don't fold a new one as that wastes those 10 charges from yesterday
+	//Special handling for replacing an item with itself.
 	//do not use possessEquipment nor equipmentAmount here, they have special handling for tote foldables that always counts number of january's garbage totes instead of the target item. Resulting in this if always being true.
 	if(available_amount(it) > 0)
 	{
 		int leftover_charges = 0;
-		if(!get_property("_garbageItemChanged").to_boolean())		//if we changed it today then we are counting today's charges.
+		if(get_property("_garbageItemChanged").to_boolean())
 		{
+			return false;		//item already changed today, leftover irrelevant. don't replace an item with itself
+		}
+		else
+		{
+			//preserve leftover charges by only replacing an item with itself if 0 charges remain from yesterday
 			switch(it)
 			{
 			case $item[Deceased Crimbo Tree]:		leftover_charges = get_property("garbageTreeCharge").to_int();			break;
@@ -70,6 +74,7 @@ boolean januaryToteAcquire(item it)
 		{
 			return false;
 		}
+		
 	}
 	
 	//if needed, disable mafia warning halting for popup confirmation of wasting leftover charges

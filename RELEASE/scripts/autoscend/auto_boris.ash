@@ -306,16 +306,16 @@ void borisDemandSandwich()
 	}
 }
 
-void borisOngoingLaugh()
+void borisWastedMP()
 {
-	//Convert excess MP regen for boris into HP if possible to prevent it from being wasted.
-	//Mostly this comes from clancy, but we want to account for other sources.
+	//Check for wasted MP regeneration and use it up. primarily called towards the end of auto_pre_adv.ash
+	//Mostly the MP regen would come from clancy
 	if(!in_boris())
 	{
 		return;
 	}
 	
-	float max_potential_mp_regen = ceil(simValue("mp regen max"));
+	float max_potential_mp_regen = numeric_modifier("MP Regen Max");
 	float missing_mp = my_maxmp() - my_mp();
 	float potential_mp_wasted = 0;
 	if(max_potential_mp_regen > missing_mp)
@@ -353,7 +353,6 @@ boolean LM_boris()
 	}
 	
 	borisDemandSandwich();
-	borisOngoingLaugh();
 	boris_buySkills();
 
 	return false;

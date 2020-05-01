@@ -492,6 +492,7 @@ void main()
 		auto_log_info("Burning " + wasted_mp + " MP...");
 		cli_execute("burn " + wasted_mp);
 	}
+	borisWastedMP();
 
 	acquireMP(32, 1000);
 

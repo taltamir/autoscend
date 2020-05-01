@@ -46,35 +46,39 @@ int januaryToteTurnsLeft(item it)
 
 boolean januaryToteAcquire(item it)
 {
+	//a function acquire january's garbage tote equipment. like basic acquire command, this also returns true if you already have the item on hand.
+	
 	if(!isjanuaryToteAvailable())
 	{
 		return false;
 	}
 	
-	//Special handling for replacing an item with itself.
+	//Special handling for if we already have the item on hand. We might want to replace it with tiself.
 	//do not use possessEquipment nor equipmentAmount here, they have special handling for tote foldables that always counts number of january's garbage totes instead of the target item. Resulting in this if always being true.
 	if(available_amount(it) > 0)
 	{
 		int leftover_charges = 0;
 		if(get_property("_garbageItemChanged").to_boolean())
 		{
-			return false;		//item already changed today, leftover irrelevant. don't replace an item with itself
+			return true;		//item already swapped today eliminating leftover charges. don't replace an item with itself.
 		}
 		else
 		{
-			//preserve leftover charges by only replacing an item with itself if 0 charges remain from yesterday
+			//since item was not changed yet, count leftover charges from yesterday.
+			//If target item has no charges at all then pretend it has 1 leftover to not replace it with itself.
 			switch(it)
 			{
 			case $item[Deceased Crimbo Tree]:		leftover_charges = get_property("garbageTreeCharge").to_int();			break;
 			case $item[Broken Champagne Bottle]:	leftover_charges = get_property("garbageChampagneCharge").to_int();		break;
+			case $item[Tinsel Tights]:				leftover_charges = 1;													break;
+			case $item[Wad Of Used Tape]:			leftover_charges = 1;													break;
 			case $item[Makeshift Garbage Shirt]:	leftover_charges = get_property("garbageShirtCharge").to_int();			break;
 			}
 		}
 		if(leftover_charges > 0)
 		{
-			return false;
+			return true;		//preserve leftover charges by keeping current instance of the item.
 		}
-		
 	}
 	
 	//if needed, disable mafia warning halting for popup confirmation of wasting leftover charges
@@ -116,8 +120,11 @@ boolean januaryToteAcquire(item it)
 		{
 			return false;
 		}
-		visit_url("inv_use.php?pwd=" + my_hash() + "&which=3&whichitem=9690", false);	//rummage in your garbage tote
-		run_choice(5);																	//get garbage shirt
+		if(available_amount($item[Makeshift Garbage Shirt]) == 0)		//only rummage a new shirt if we don't already have one on hand.
+		{
+			visit_url("inv_use.php?pwd=" + my_hash() + "&which=3&whichitem=9690", false);	//rummage in your garbage tote
+			run_choice(5);																	//get garbage shirt
+		}
 		visit_url("inv_equip.php?pwd=&which=2&action=equip&whichitem=9699");		//url fail to equip shirt to get a letter
 	}
 	else

@@ -81,23 +81,24 @@ boolean LX_unlockThinknerdWarehouse(boolean spend_resources)
 		auto_log_error("For some reason LX_unlockThinknerdWarehouse failed when trying to use the shirt [" + target_shirt + "] to get [Letter for Melvign the Gnome] to start the quest", "red");
 		return false;
 	}
-	void pullShirtWhenHaveNone(item it)
-	{
-		if(hasShirt) return;
-		if(canPull(it) && pullXWhenHaveY(it, 1, 0))
-		{
-			target_shirt = it;
-			hasShirt = true;
-		}
-	}
 	void getShirtWhenHaveNone(item it)
 	{
-		//pull, craft, or pull 1 ingredient and then craft
 		if(hasShirt) return;
-		if(acquireOrPull(it))
+		if(canPull(it))
 		{
-			target_shirt = it;
-			hasShirt = true;
+			if(pullXWhenHaveY(it, 1, 0))
+			{
+				target_shirt = it;
+				hasShirt = true;
+			}
+		}
+		else if(creatable_amount(it) > 0 && (spend_resources || knoll_available()))
+		{
+			if(create(1, it))
+			{
+				target_shirt = it;
+				hasShirt = true;
+			}
 		}
 	}
 	
@@ -117,24 +118,21 @@ boolean LX_unlockThinknerdWarehouse(boolean spend_resources)
 	//getShirtWhenHaveNone($item[sugar shirt])				//libram summons sugar sheet, multiuse 1 with torso awaregness to get sugar shirt
 	
 	//Shirts to pull
-	pullShirtWhenHaveNone($item[Sneaky Pete\'s leather jacket]);		//useful IOTM shirt with no state requirements to wear
-	pullShirtWhenHaveNone($item[Sneaky Pete\'s leather jacket (collar popped)]);
-	pullShirtWhenHaveNone($item[Professor What T-Shirt]);			//you likely have it, no requirements to wear, very cheap in mall
+	getShirtWhenHaveNone($item[Sneaky Pete\'s leather jacket]);		//useful IOTM shirt with no state requirements to wear
+	getShirtWhenHaveNone($item[Sneaky Pete\'s leather jacket (collar popped)]);
+	getShirtWhenHaveNone($item[Professor What T-Shirt]);			//you likely have it, no requirements to wear, very cheap in mall
 	
 	//Shirts to smith, potentially pulling component. Will likely cost 1 adv unless in knoll sign.
-	if(spend_resources || knoll_available())
-	{
-		getShirtWhenHaveNone($item[white snakeskin duster]);		//7 mus req
-		getShirtWhenHaveNone($item[clownskin harness]);				//15 mus req
-		getShirtWhenHaveNone($item[demonskin jacket]);				//25 mus req
-		getShirtWhenHaveNone($item[gnauga hide vest]);				//25 mus req
-		getShirtWhenHaveNone($item[tuxedo shirt]);					//35 mus req
-		getShirtWhenHaveNone($item[yak anorak]);					//42 mus req
-		getShirtWhenHaveNone($item[hipposkin poncho]);				//45 mus req
-		getShirtWhenHaveNone($item[lynyrdskin tunic]);				//70 mus req
-		getShirtWhenHaveNone($item[bat-ass leather jacket]);		//77 mus req
-	}
-	
+	getShirtWhenHaveNone($item[white snakeskin duster]);		//7 mus req
+	getShirtWhenHaveNone($item[clownskin harness]);				//15 mus req
+	getShirtWhenHaveNone($item[demonskin jacket]);				//25 mus req
+	getShirtWhenHaveNone($item[gnauga hide vest]);				//25 mus req
+	getShirtWhenHaveNone($item[tuxedo shirt]);					//35 mus req
+	getShirtWhenHaveNone($item[yak anorak]);					//42 mus req
+	getShirtWhenHaveNone($item[hipposkin poncho]);				//45 mus req
+	getShirtWhenHaveNone($item[lynyrdskin tunic]);				//70 mus req
+	getShirtWhenHaveNone($item[bat-ass leather jacket]);		//77 mus req
+
 	//wish for a shirt
 	if(spend_resources && wishesAvailable() > 0 && shouldUseWishes() && item_amount($item[blessed rustproof +2 gray dragon scale mail]) == 0)
 	{

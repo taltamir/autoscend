@@ -65,6 +65,7 @@ boolean januaryToteAcquire(item it)
 		int leftover_charges = 0;
 		if(get_property("_garbageItemChanged").to_boolean())
 		{
+			removeFromMaximize("-equip " + it);
 			return true;		//item already swapped today eliminating leftover charges. don't replace an item with itself.
 		}
 		else
@@ -82,6 +83,7 @@ boolean januaryToteAcquire(item it)
 		}
 		if(leftover_charges > 0)
 		{
+			removeFromMaximize("-equip " + it);
 			return true;		//preserve leftover charges by keeping current instance of the item.
 		}
 	}
@@ -137,6 +139,7 @@ boolean januaryToteAcquire(item it)
 	
 	if(item_amount(it) > 0)
 	{
+		removeFromMaximize("-equip " + it);
 		return true;
 	}
 	return false;

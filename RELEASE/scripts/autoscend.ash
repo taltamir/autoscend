@@ -5176,6 +5176,7 @@ void auto_begin()
 
 	if(my_daycount() > 1)
 	{
+		resetMaximize();
 		equipBaseline();
 	}
 

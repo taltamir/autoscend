@@ -2721,7 +2721,7 @@ boolean LX_spookyravenSecond()
 	return false;
 }
 
-boolean wantPowerLevel()
+boolean disregardInstantKarma()
 {
 	//under level 13 we wan to get max XP. level 14+ we already missed the insta karma, no need to hold back anymore.
 	return my_level() != 13 || get_property("auto_disregardInstantKarma").to_boolean();
@@ -2756,7 +2756,7 @@ int auto_freeCombatsRemaining(boolean print_remaining_fights)
 		count += temp;
 		debugPrint("Snojo = " + temp);
 	}
-	if(canChangeToFamiliar($familiar[God Lobster]) && wantPowerLevel())
+	if(canChangeToFamiliar($familiar[God Lobster]) && disregardInstantKarma())
 	{
 		int temp = 3-get_property("_godLobsterFights").to_int();
 		count += temp;
@@ -2784,7 +2784,7 @@ int auto_freeCombatsRemaining(boolean print_remaining_fights)
 
 boolean LX_freeCombats()
 {
-	return LX_freeCombats(wantPowerLevel());
+	return LX_freeCombats(disregardInstantKarma());
 }
 
 boolean LX_freeCombats(boolean powerlevel)
@@ -2819,7 +2819,7 @@ boolean LX_freeCombats(boolean powerlevel)
 	auto_log_debug("LX_freeCombats active with powerlevel set to " + powerlevel);
 	
 	resetMaximize();
-	if(wantPowerLevel())
+	if(disregardInstantKarma())
 	{
 		handleFamiliar("stat");
 	}

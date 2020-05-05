@@ -4879,8 +4879,9 @@ boolean doTasks()
 			evokeEldritchHorror();
 		}
 	}
-	if(my_adventures() == 2 && inebriety_left() == 0 && stomach_left() < 1)
+	if(my_adventures() == (1 + auto_advToReserve()) && inebriety_left() == 0 && stomach_left() < 1)
 	{
+		auto_log_debug("Only 1 adv left in main loop so doing free combats");
 		if(LX_freeCombats()) return true;
 	}
 

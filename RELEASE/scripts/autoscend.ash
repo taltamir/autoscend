@@ -2816,6 +2816,8 @@ boolean LX_freeCombats(boolean powerlevel)
 		abort("Please perform the remaining free combats manually then run me again");
 	}
 	
+	auto_log_debug("LX_freeCombats active with powerlevel set to " + powerlevel);
+	
 	resetMaximize();
 	if(wantPowerLevel())
 	{
@@ -2826,10 +2828,12 @@ boolean LX_freeCombats(boolean powerlevel)
 	{
 		if(powerlevel)
 		{
+			auto_log_debug("LX_freeCombats is calling neverendingPartyPowerlevel()");
 			if(neverendingPartyPowerlevel()) return true;
 		}
 		else
 		{
+			auto_log_debug("LX_freeCombats is calling neverendingPartyCombat()");
 			if(neverendingPartyCombat()) return true;
 		}
 	}
@@ -2838,6 +2842,7 @@ boolean LX_freeCombats(boolean powerlevel)
 
 	if(!in_koe() && get_property("_machineTunnelsAdv").to_int() < 5 && canChangeToFamiliar($familiar[Machine Elf]))
 	{
+		auto_log_debug("LX_freeCombats is adventuring in [The Deep Machine Tunnels]");
 		backupSetting("choiceAdventure1119", 1);
 
 		familiar bjorn = my_bjorned_familiar();
@@ -2858,6 +2863,7 @@ boolean LX_freeCombats(boolean powerlevel)
 
 	if(snojoFightAvailable())
 	{
+		auto_log_debug("LX_freeCombats is adventuring in [The Snojo]");
 		adv_done = autoAdv(1, $location[The X-32-F Combat Training Snowman]);
 		loopHandlerDelayAll();
 		if(adv_done) return true;
@@ -2865,17 +2871,26 @@ boolean LX_freeCombats(boolean powerlevel)
 
 	if(powerlevel)
 	{
+		auto_log_debug("LX_freeCombats is calling godLobsterCombat()");
 		if(godLobsterCombat()) return true;
 	}
 	
 	if(get_property("_eldritchTentacleFought").to_boolean() == false)
 	{
+		auto_log_debug("LX_freeCombats is calling fightScienceTentacle()");
 		if(fightScienceTentacle()) return true;
 	}
 	
 	if(auto_have_skill($skill[Evoke Eldritch Horror]) && get_property("_eldritchHorrorEvoked").to_boolean() == false)
 	{
+		auto_log_debug("LX_freeCombats is calling evokeEldritchHorror()");
 		if(evokeEldritchHorror()) return true;
+	}
+	
+	if(auto_freeCombatsRemaining() == 0)
+	{
+		auto_log_debug("I reached the end of LX_freeCombats() but I think the following free combats were not used for some reason:");
+		auto_freeCombatsRemaining(true);		//print remaining free combats.
 	}
 
 	return false;

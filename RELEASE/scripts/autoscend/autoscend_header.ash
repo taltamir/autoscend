@@ -218,11 +218,6 @@ void print_header();
 // Semi-rare Handlers:
 boolean fortuneCookieEvent();
 
-// Familiar Behavior, good stuff.
-boolean handleFamiliar(familiar fam);
-boolean handleFamiliar(string fam);
-boolean basicFamiliarOverrides();
-
 // Meat Generation
 boolean autosellCrap();
 
@@ -464,7 +459,6 @@ boolean autoOverdrink(int howMany, item toOverdrink);			//Defined in autoscend/a
 boolean canDrink(item toDrink);								//Defined in autoscend/auto_cooking.ash
 boolean canEat(item toEat);									//Defined in autoscend/auto_cooking.ash
 boolean canChew(item toChew); //Defined in autoscend/auto_cooking.ash
-boolean auto_have_familiar(familiar fam);						//Defined in autoscend/auto_util.ash
 boolean auto_advWitchess(string target);						//Defined in autoscend/auto_mr2016.ash
 boolean auto_advWitchess(string target, string option);		//Defined in autoscend/auto_mr2016.ash
 int auto_advWitchessTargets(string target);					//Defined in autoscend/auto_mr2016.ash
@@ -841,10 +835,8 @@ boolean acquireOrPull(item it);								//Defined in autoscend/auto_util.ash
 boolean have_skills(boolean[skill] array);					//Defined in autoscend/auto_util.ash
 boolean auto_have_skill(skill sk);							//Defined in autoscend/auto_util.ash
 boolean haveGhostReport();									//Defined in autoscend/auto_mr2016.ash
-boolean haveSpleenFamiliar();								//Defined in autoscend/auto_util.ash
 int howLongBeforeHoloWristDrop();							//Defined in autoscend/auto_util.ash
 void hr_doBedtime();										//Defined in autoscend/auto_heavyrains.ash
-boolean hr_handleFamiliar(familiar fam);					//Defined in autoscend/auto_heavyrains.ash
 void hr_initializeDay(int day);								//Defined in autoscend/auto_heavyrains.ash
 void hr_initializeSettings();								//Defined in autoscend/auto_heavyrains.ash
 boolean L13_towerFinalHeavyRains();							//Defined in autoscend/auto_heavyrains.ash
@@ -859,8 +851,13 @@ int internalQuestStatus(string prop);						//Defined in autoscend/auto_util.ash
 int freeCrafts();											//Defined in autoscend/auto_util.ash
 boolean is100FamRun();										//Defined in autoscend/auto_util.ash
 boolean pathAllowsFamiliar();								//Defined in autoscend/auto_util.ash
+boolean auto_have_familiar(familiar fam);					//Defined in autoscend/auto_util.ash
 boolean canChangeFamiliar();								//Defined in autoscend/auto_util.ash
 boolean canChangeToFamiliar(familiar target);				//Defined in autoscend/auto_util.ash
+boolean handleFamiliar(familiar fam);						//Defined in autoscend/auto_util.ash
+boolean handleFamiliar(string fam);							//Defined in autoscend/auto_util.ash
+boolean initialAutoFamiliarChoice();						//Defined in autoscend/auto_util.ash
+boolean haveSpleenFamiliar();								//Defined in autoscend/auto_util.ash
 boolean isBanished(monster enemy);							//Defined in autoscend/auto_util.ash
 boolean isExpectingArrow();									//Defined in autoscend/auto_util.ash
 boolean isFreeMonster(monster mon);							//Defined in autoscend/auto_util.ash

@@ -285,8 +285,8 @@ boolean fantasyRealmToken()
 	{
 		return false;
 	}
-	set_property("auto_familiarChoice", "none");
-	use_familiar($familiar[none]);
+
+	handleFamiliar($familiar[none]);
 
 	if(possessEquipment($item[FantasyRealm G. E. M.]))
 	{

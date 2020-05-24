@@ -18,7 +18,6 @@ boolean use_barrels();
 int autoCraft(string mode, int count, item item1, item item2);
 int[item] auto_get_campground();
 int towerKeyCount();
-boolean haveSpleenFamiliar();
 boolean considerGrimstoneGolem(boolean bjornCrown);
 float elemental_resist_value(int resistance);
 int elemental_resist(element goal);
@@ -918,6 +917,35 @@ boolean pathAllowsFamiliar()
 	return true;
 }
 
+boolean auto_have_familiar(familiar fam)
+{
+	if(!pathAllowsFamiliar())
+	{
+		return false;
+	}
+	if(!auto_is_valid(fam))
+	{
+		return false;
+	}
+	
+	//handle blacklisting of familiars by users
+	int[familiar] blacklist;
+	if(get_property("auto_blacklistFamiliar") != "")
+	{
+		string[int] noFams = split_string(get_property("auto_blacklistFamiliar"), ";");
+		foreach index, fam in noFams
+		{
+			blacklist[to_familiar(trim(fam))] = 1;
+		}
+	}
+	if(blacklist contains fam)
+	{
+		return false;
+	}
+	
+	return have_familiar(fam);
+}
+
 boolean canChangeFamiliar()
 {
 	// answers the question "am I allowed to change familiar?" in the general sense
@@ -948,6 +976,12 @@ boolean canChangeToFamiliar(familiar target)
 	{
 		return false;
 	}
+	
+	if(target == $familiar[none])
+	{
+		//on paths that do not allow familiars at all, trying to switch to $familiar[none] causes an exception.
+		return pathAllowsFamiliar();
+	}
 
 	// if you don't have a familiar, you can't change to it.
 	if(!auto_have_familiar(target))
@@ -968,6 +1002,198 @@ boolean canChangeToFamiliar(familiar target)
 	
 	// if you reached this point, then auto_100familiar must not be set to anything, you are allowed to change familiar.
 	return true;
+}
+
+boolean handleFamiliar(string type)
+{
+	//Can this take zoneInfo into account?
+
+	boolean suggest = type.ends_with("Suggest");
+	if(suggest)
+	{
+		type = type.substring(0, type.length() - length("Suggest"));
+		if(familiar_weight(my_familiar()) < 20)
+		{
+			return false;
+		}
+	}
+
+	string [string,int,string] familiars_text;
+	if(!file_to_map("autoscend_familiars.txt", familiars_text))
+		auto_log_critical("Could not load autoscend_familiars.txt. This is bad!", "red");
+	foreach i,name,conds in familiars_text[type]
+	{
+		familiar thisFamiliar = name.to_familiar();
+		if(thisFamiliar == $familiar[none])
+		{
+			if(name != "none")
+			{
+				auto_log_error('"' + name + '" does not convert to a familiar properly!', "red");
+				auto_log_error(type + "; " + i + "; " + conds, "red");
+			}
+			continue;
+		}
+		if(!auto_check_conditions(conds))
+			continue;
+		if(!auto_have_familiar(thisFamiliar))
+			continue;
+		return handleFamiliar(thisFamiliar);
+	}
+	return false;
+}
+
+boolean handleFamiliar(familiar fam)
+{
+	if(get_property("auto_disableFamiliarChanging").to_boolean())
+	{
+		return false;	//familiar changing temporarily disabled.
+	}
+	if(fam == $familiar[none])
+	{
+		set_property("auto_familiarChoice", REALLY_NONE);		//special handling for switching to familiar none.
+		return true;
+	}
+	if(get_property("auto_familiarChoice").to_familiar() == fam)	//this should go after $familiar[none] check
+	{
+		return true;	//desired target is already set as the familiar I will be switching to.
+	}
+	if(!pathAllowsFamiliar())
+	{
+		return false;
+	}
+	if(is100FamRun() && get_property("auto_100familiar").to_familiar() != fam)
+	{
+		return false;	//do not break a 100% familiar run
+	}
+	
+	//[Ms. Puck Man] and [Puck Man] are interchangeable. so interchange them if needed.
+	if((fam == $familiar[Ms. Puck Man]) && !auto_have_familiar($familiar[Ms. Puck Man]) && auto_have_familiar($familiar[Puck Man]))
+	{
+		fam = $familiar[Puck Man];
+	}
+	if((fam == $familiar[Puck Man]) && !auto_have_familiar($familiar[Puck Man]) && auto_have_familiar($familiar[Ms. Puck Man]))
+	{
+		fam = $familiar[Ms. Puck Man];
+	}
+	
+	//bjorning takes priority
+	if(my_bjorned_familiar() == fam)
+	{
+		return false;
+	}
+
+	set_property("auto_familiarChoice", fam);
+	return true;
+}
+
+boolean initialAutoFamiliarChoice()
+{
+	//initial automatic determination of which familiar to use. to be run early in every doTasks() loop.
+	//if a zone requires a specific familiar then it will overwrite this choice later
+	
+	set_property("auto_familiarChoice", $familiar[none]);	//reset familiar choice
+	
+	//select the best familiar that drops items, or gives item drop bonus. Excluding ones with overly complex rules
+	handleFamiliar("item");
+	//override the familiar choice, replacing the one chosen above. 
+	//This is for familiars with complicated calculations that should not go in the familiar item.dat file
+	
+	//prioritize grimstone mask if you still need one for a dowsing rod
+	if(auto_have_familiar($familiar[Grimstone Golem]) && !possessEquipment($item[Ornate Dowsing Rod]) && item_amount($item[Odd Silver Coin]) < 5 && item_amount($item[Grimstone Mask]) == 0 && considerGrimstoneGolem(false))
+	{
+		handleFamiliar($familiar[Grimstone Golem]);
+	}
+	
+	//prioritize grabbing spleen consumables early if you do not have enough such items to fill up your spleen
+	int spleen_items_size = 0;
+	foreach it in $items[Agua De Vida, Grim Fairy Tale, Groose Grease, Powdered Gold, Unconscious Collective Dream Jar]
+	{
+		if (auto_is_valid(it))
+		{
+			spleen_items_size += 4 * item_amount(it);
+		}
+	}
+	//TODO count all the various pastes produced by the fairy worn boots
+	if(spleen_left() >= (4 + spleen_items_size) && haveSpleenFamiliar())
+	{
+		int spleenHave = 0;
+		foreach fam in $familiars[Baby Sandworm, Bloovian Groose, Golden Monkey, Grim Brother, Unconscious Collective]
+		{
+			if(auto_have_familiar(fam))
+			{
+				spleenHave++;
+			}
+		}
+
+		if(spleenHave > 0)
+		{
+			int need = (spleen_left() + 3)/4;
+			int bound = (need + spleenHave - 1) / spleenHave;
+			foreach fam in $familiars[Baby Sandworm, Bloovian Groose, Golden Monkey, Grim Brother, Unconscious Collective]
+			{
+				if((fam.drops_today < bound) && auto_have_familiar(fam))
+				{
+					handleFamiliar(fam);
+					break;
+				}
+			}
+		}
+	}
+	else if((item_amount($item[Yellow Pixel]) < 20) && (auto_have_familiar($familiar[Ms. Puck Man]) || auto_have_familiar($familiar[Puck Man])))
+	{
+		handleFamiliar($familiar[Puck Man]);
+	}
+	
+	//prefer to get the grimstone mask as a bjorn drop instead of a familiar drop.
+	if(auto_have_familiar($familiar[Grimstone Golem]) && !possessEquipment($item[Buddy Bjorn] && $familiar[Grimstone Golem].drops_today < 1)
+	{
+		if(handleFamiliar($familiar[Grimstone Golem])) return true;
+	}
+	
+	//1 drop a day of a size 4 spleen item that gives adventures
+	foreach fam in $familiars[Baby Sandworm, Bloovian Groose, Golden Monkey, Grim Brother, Unconscious Collective]
+	{
+		if(fam.drops_today < 1 && auto_have_familiar(fam))
+		{
+			if(handleFamiliar(fam)) return true;
+		}
+	}
+	
+	else if((item_amount($item[Yellow Pixel]) < 20) && (auto_have_familiar($familiar[Ms. Puck Man]) || auto_have_familiar($familiar[Puck Man])))
+	{
+		handleFamiliar($familiar[Ms. Puck Man]);
+	}
+
+	if(my_maxmp() > 50 && my_mp()*5 < my_maxmp())
+	{
+		if(handleFamiliar("regen")) return true;
+	}
+	
+	
+	
+	familiar famChoice;
+	foreach thing in $familiars[Mosquito, Leprechaun, Hobo Monkey, Crimbo Shrub, Galloping Grill]
+	{
+		if((auto_have_familiar(thing)) && (my_bjorned_familiar() != thing))
+		{
+			famChoice = thing;
+		}
+	}
+	if(handleFamiliar(famChoice)) return true;
+	
+	return false;
+}
+
+boolean haveSpleenFamiliar()
+{
+	foreach fam in $familiars[Baby Sandworm, Rogue Program, Pair of Stomping Boots, Bloovian Groose, Unconscious Collective, Grim Brother, Golden Monkey];
+	{
+		if(auto_have_familiar(fam))
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 boolean setAdvPHPFlag()
@@ -3717,29 +3943,6 @@ boolean provideMoxie(int amt, boolean doEquips)
 	return provideMoxie(amt, doEquips, false) >= amt;
 }
 
-boolean auto_have_familiar(familiar fam)
-{
-	if(auto_my_path() == "License to Adventure")
-	{
-		return false;
-	}
-	if($classes[
-		Avatar Of Boris,
-		Avatar Of Jarlsberg,
-		Avatar Of Sneaky Pete,
-		Ed,
-		Vampyre,
-		] contains my_class())
-	{
-		return false;
-	}
-	if(!auto_is_valid(fam))
-	{
-		return false;
-	}
-	return have_familiar(fam);
-}
-
 boolean basicAdjustML()
 {
 	if(in_boris()) return borisAdjustML();
@@ -5031,30 +5234,6 @@ boolean considerGrimstoneGolem(boolean bjornCrown)
 	}
 
 	return true;
-}
-
-boolean haveSpleenFamiliar()
-{
-	boolean [familiar] spleenies = $familiars[Baby Sandworm, Rogue Program, Pair of Stomping Boots, Bloovian Groose, Unconscious Collective, Grim Brother, Golden Monkey];
-
-	int[familiar] blacklist;
-	if(get_property("auto_blacklistFamiliar") != "")
-	{
-		string[int] noFams = split_string(get_property("auto_blacklistFamiliar"), ";");
-		foreach index, fam in noFams
-		{
-			blacklist[to_familiar(trim(fam))] = 1;
-		}
-	}
-
-	foreach fam in spleenies
-	{
-		if(have_familiar(fam) && !(blacklist contains fam))
-		{
-			return true;
-		}
-	}
-	return false;
 }
 
 boolean acquireTransfunctioner()

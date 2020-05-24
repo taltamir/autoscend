@@ -1,13 +1,10 @@
-# Undead familiars only when a zombie
-XO Skeleton	path:Zombie Master;prop:_xoHugsUsed<11
-Reagnimated Gnome	path:Zombie Master
 # Do we wanna grab cubeling drops? Usually yes.
 Gelatinous Cubeling	prop:auto_useCubeling=true;prop:auto_cubeItems=true
-# Cheerleader isn't subject to weight restrictions in KOLHS, so let's just use it before almost anything to be safee
+# Cheerleader isn't subject to weight restrictions in KOLHS, so let's just use it before almost anything to be safe
 Steam-Powered Cheerleader	path:KOLHS
-# Wanna get that jar
-Angry Jung Man	prop:_jungDrops<1;day:1
-# Wanna get that mask
+# We use 1 jar drop per run to save turns when getting the pixel key... but only if we do not have a powerful glove.
+Angry Jung Man	prop:_jungDrops<1;day:1;item:Powerful Glove<1
+# We use one grimstone mask per run to get an ornate dowsing rod and save turns in the desert.
 Grimstone Golem	prop:_grimstoneMaskDrops<1;day:1
 # That's some nice booze
 Fist Turkey	prop:_turkeyBooze<5
@@ -33,8 +30,16 @@ Intergnat	item:BACON<350
 Cat Burglar	prop:_catBurglarCharge<30
 # And some hugpockets
 XO Skeleton	prop:_xoHugsUsed<5
-# And some pastes
+# density 1.875 size 4 spleen consumables. initialAutoFamiliarChoice() will prioritize using them when spleen is not full
+# do not use Grim Brother here. As he gives +combat chance. His handling will be done in preAdvUpdateFamiliar
+Baby Sandworm	prop:_aguaDrops<5
+Bloovian Groose	prop:_grooseDrops<5
+Golden Monkey	prop:_powderedGoldDrops<5
+Unconscious Collective	prop:_dreamJarDrops<5
 Pair of Stomping Boots	prop:_bootStomps<7
+# Daily drops that are nice to collect but we do not need for the run anymore.
+Angry Jung Man	prop:_jungDrops<1
+Grimstone Golem	prop:_grimstoneMaskDrops<1
 # And some more hugpockets
 XO Skeleton	prop:_xoHugsUsed<11
 # And some adventures
@@ -91,6 +96,8 @@ Spooky Gravy Fairy
 Mechanical Songbird
 Grouper Groupie
 Peppermint Rhino
+# Fairy that if fed equipment will regen MP and give extra drops. Since we do not make use of this functionality it is just a fairy.
+Slimeling
 # Turtles are cute
 Syncopated Turtle
 # The original

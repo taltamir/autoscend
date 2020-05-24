@@ -304,18 +304,28 @@ void preAdvUpdateFamiliar(location place)
 	{
 		return;
 	}
+	if(!pathAllowsFamiliar())
+	{
+		return;
+	}
+	if(get_property("auto_familiarChoice") == "REALLY_NONE")
+	{
+		if(my_familiar() != $familiar[none])
+		{
+			use_familiar($familiar[none]);
+		}
+		return;
+	}
+	
+	//Grim Brother here gives +combat chance. His handling will be done in preAdvUpdateFamiliar
+	//Grim Brother	prop:_grimFairyTaleDrops<1
 	
 	familiar famChoice = to_familiar(get_property("auto_familiarChoice"));
-	if(auto_my_path() == "Pocket Familiars")
-	{
-		famChoice = $familiar[none];
-	}
 
-	if((famChoice != $familiar[none]) && canChangeFamiliar() && (internalQuestStatus("questL13Final") < 13))
+	if((famChoice != $familiar[none]) && canChangeFamiliar())
 	{
-		if((famChoice != my_familiar()) && !inAftercore())
+		if((famChoice != my_familiar()))
 		{
-#			auto_log_error("FAMILIAR DIRECTIVE ERROR: Selected " + famChoice + " but have " + my_familiar(), "red");
 			use_familiar(famChoice);
 		}
 	}
@@ -364,6 +374,11 @@ void preAdvUpdateFamiliar(location place)
 				}
 			}
 		}
+	}
+	
+	if((my_path() == "Heavy Rains"))
+	{
+		autoEquip($slot[familiar], $item[miniature life preserver]);
 	}
 }
 

@@ -17,6 +17,11 @@ void bhy_initializeSettings()
 	}
 }
 
+int bee_count(string str)
+{
+
+}
+
 boolean bees_hate_usable(string str)
 {
 	if(!in_bhy())
@@ -26,12 +31,6 @@ boolean bees_hate_usable(string str)
 
 	switch(str)
 	{
-	case "Cobb's Knob map":
-	case "ball polish":
-	case "black market map":
-	case "boring binder clip":
-	case "beehive":
-	case "electric boning knife":
 	case "ninja carabiner":
 	case "Orcish baseball cap":
 	case "reinforced beaded headband":
